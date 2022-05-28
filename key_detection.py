@@ -197,27 +197,27 @@ def whitekeys_detection(black, y_max):                   #输入黑键信息和�
     return white
 
 def key_detection(src):                                  #输入一张图片，输出一个和图像一样大小的二维数组，每个像素点的值代表是哪个键
-    #从0到51是从左往右数52个白键，从52到87是从左往右数36个黑键
+    #从1到52是从左往右数52个白键，从53到88是从左往右数36个黑键
     black = blackkeys_detection(src)
     white = whitekeys_detection(black, np.shape(src)[0])
     result = np.zeros((np.shape(src)[0], np.shape(src)[1]), dtype=np.intc)
     e = 1
     for i in white:
-        result[i[1]:i[3], i[0]:i[2]] = e
+        #result[i[1]:i[3], i[0]:i[2]] = e
         result[i[5]:i[7], i[4]:i[6]] = e
         #tmp_color = [np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)]  可视化
         #src[i[1]:i[3], i[0]:i[2]] = tmp_color
         #src[i[5]:i[7], i[4]:i[6]] = tmp_color
         e+= 1
     for i in black:
-        result[i[1]:(i[1] + i[3]), i[0]:(i[0] + i[2])] = e
+        result[(i[1] + 1):(i[1] + i[3] - 1), (i[0] + 1):(i[0] + i[2] - 1)] = e
         #tmp_color = [np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)]  可视化
         #src[i[1]:(i[1] + i[3]), i[0]:(i[0] + i[2])] = tmp_color
         e+= 1
     return result
 
 def key_detection_visual(src):                           #上一个函数的可视化版
-    #从0到51是从左往右数52个白键，从52到87是从左往右数36个黑键
+    #从1到52是从左往右数52个白键，从53到88是从左往右数36个黑键
     black = blackkeys_detection_visual(src)
     white = whitekeys_detection(black, np.shape(src)[0])
     result_img1 = src
@@ -237,14 +237,14 @@ def key_detection_visual(src):                           #上一个函数的可�
         result_img2[i[5]:i[7], i[4]:i[6]] = tmp_color
         e+= 1
     for i in black:
-        result[i[1]:(i[1] + i[3]), i[0]:(i[0] + i[2])] = e
+        result[(i[1] + 1):(i[1] + i[3] - 1), (i[0] + 1):(i[0] + i[2] - 1)] = e
         tmp_color = [np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)]  #可视化
-        result_img2[i[1]:(i[1] + i[3]), i[0]:(i[0] + i[2])] = tmp_color
+        result_img2[(i[1] + 1):(i[1] + i[3] - 1), (i[0] + 1):(i[0] + i[2] - 1)] = tmp_color
         e+= 1
     cv2.imshow("result_img2", result_img2)
     cv2.waitKey(0)
     return result
 
 if __name__ == "__main__":
-    src = cv2.imread('piano3.png', cv2.IMREAD_COLOR)
-    result = key_detection(src)
+    src = cv2.imread('testFigures_keyboard/219.bmp', cv2.IMREAD_COLOR)
+    result = key_detection_visual(src)

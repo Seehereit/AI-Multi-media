@@ -26,7 +26,7 @@ def get_background():
         fig_keyboard,whitekey = crop_fig(fig_gray)
         if len(whitekey) == 0:
            continue
-        # savefig_keyboard(path,fig_keyboard)
+        #savefig_keyboard(path,fig_keyboard)
         # import pdb;pdb.set_trace()
 
         b = brightness(whitekey)
@@ -51,33 +51,33 @@ def get_keys(bgr,keyboard):
         
         frm = np.array(cv2.cvtColor(frm, cv2.COLOR_BGR2GRAY))
         
-        res = moveTowards_filter(bgr,frm)
-        
-        white = np.clip(bgr.astype(np.int16)-res.astype(np.int16),a_min=0,a_max=255).astype(np.uint8)
-        black = np.clip(res.astype(np.int16)-bgr.astype(np.int16),a_min=0,a_max=255).astype(np.uint8)
+        res_black = moveTowards_filter(bgr,frm, 12)
+        res_white = moveTowards_filter(bgr,frm, 50)
+        white = np.clip(bgr.astype(np.int16)-res_white.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
+        black = np.clip(res_black.astype(np.int16)-bgr.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
         # pdb.set_trace()
-        _, thresh_white = cv2.threshold(white,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-        _, thresh_black = cv2.threshold(black,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        #_, thresh_white = cv2.threshold(white,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+        #_, thresh_black = cv2.threshold(black,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         keys = []
-        for i in range(88):
+        for i in range(1, 89):
             mask = (keyboard==i)
-            if i<=51:
-                target = thresh_white
+            if i<=52:
+                target = white
             else:
-                target = thresh_black
-            if get_key(target,mask):
+                target = black
+            if get_key(target,mask, i):
                 keys.append(i)
             # if target[mask].sum()/255 > int(mask.sum()*2/3):
                 # if 
                 # keys.append(i)
-        print(keys)
+        print(str(path) + str(keys))
         # pdb.set_trace()
         # cv2.imshow("result_img", thresh_black )
         # cv2.waitKey(0)
  
 if __name__ == '__main__':
-    video_path = r"C:\Users\爱德蒙·唐泰斯\Documents\PRP2\sight to sound\pianoyt_video\video_100.mp4"
-    # capture_figures(video_path,"./testFigures")
+    video_path = r"\\EVAN\pianoyt_video\video_100.mp4"
+    #capture_figures(video_path,"./testFigures")
     bgr = get_background()
     # cv2.imshow("result_img", bgr)
     # cv2.waitKey(0)
