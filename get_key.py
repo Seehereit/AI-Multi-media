@@ -1,5 +1,5 @@
 import numpy as np
-def get_key(target,mask):
+def get_key(target,mask, i):
     height = mask.shape[0]
     upper = 0
     lower = height - 1
@@ -15,8 +15,13 @@ def get_key(target,mask):
     # while (target_lower > upper) and (target_with_mask[target_lower,:].sum()==0):
     #     target_lower = target_lower - 1
     # import pdb;pdb.set_trace()
-    if target[mask].sum()/255 > int(mask.sum()*2/3):
+    #if i <= 52 or target[mask].sum()/255 > int(mask.sum()*2/5):
         # print("{} ----- {}".format(target_upper,(upper+lower)/2))
-        if ((upper+lower)/2 > target_upper):
+    #    if ((upper+lower)/2 > target_upper):
+    #        return True
+    if i <= 52:
+        if target_upper - upper < (lower - upper) / 10:
             return True
+    elif target[mask].sum()/255 > int(mask.sum()*2/5) and ((upper+lower)/2 > target_upper):
+        return True
     return False
