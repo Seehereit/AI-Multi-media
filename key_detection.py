@@ -214,7 +214,7 @@ def key_detection(src):                                  #输入一张图片，�
         #tmp_color = [np.random.randint(0, 255), np.random.randint(0, 255), np.random.randint(0, 255)]  可视化
         #src[i[1]:(i[1] + i[3]), i[0]:(i[0] + i[2])] = tmp_color
         e+= 1
-    return result
+    return result, black, white
 
 def key_detection_visual(src):                           #上一个函数的可视化版
     #从1到52是从左往右数52个白键，从53到88是从左往右数36个黑键
@@ -243,20 +243,17 @@ def key_detection_visual(src):                           #上一个函数的可�
         e+= 1
     cv2.imshow("result_img2", result_img2)
     cv2.waitKey(0)
-    return result
+    return result, black, white
 
-def get_keys_visual(bgr, key_list):     
-    black = blackkeys_detection(bgr)
-    white = whitekeys_detection(black, np.shape(bgr)[0])
+def get_keys_visual(bgr, black, white, key_list):     
     result_img = bgr
     for e in key_list:
         if e <= 52:
-            cv2.rectangle(result_img, (white[e, 0], white[e, 1]), (white[e, 2], white[e, 3]), (0, 0, 255), 1)
-            cv2.rectangle(result_img, (white[e, 4], white[e, 5]), (white[e, 6], white[e, 7]), (0, 0, 255), 1)
+            cv2.rectangle(result_img, (white[e, 0], white[e, 1]), (white[e, 2], white[e, 3]), (255, 0, 0), 1)
+            cv2.rectangle(result_img, (white[e, 4], white[e, 5]), (white[e, 6], white[e, 7]), (255, 0, 0), 1)
         else:
             cv2.rectangle(result_img, (black[e - 53, 0], black[e - 53, 1]), (black[e - 53, 0] + black[e - 53, 2], black[e - 53, 1] + black[e - 53, 3]), (0, 0, 255), 1)
-    cv2.imshow("result_img", result_img)
-    cv2.waitKey(0)
+    return result_img
 
 
 if __name__ == "__main__":
