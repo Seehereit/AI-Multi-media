@@ -249,8 +249,8 @@ def get_keys_visual(bgr, black, white, key_list):
     result_img = bgr
     for e in key_list:
         if e <= 52:
-            cv2.rectangle(result_img, (white[e, 0], white[e, 1]), (white[e, 2], white[e, 3]), (255, 0, 0), 1)
-            cv2.rectangle(result_img, (white[e, 4], white[e, 5]), (white[e, 6], white[e, 7]), (255, 0, 0), 1)
+            cv2.rectangle(result_img, (white[e - 1, 0], white[e - 1, 1]), (white[e - 1, 2], white[e - 1, 3]), (255, 0, 0), 1)
+            cv2.rectangle(result_img, (white[e - 1, 4], white[e - 1, 5]), (white[e - 1, 6], white[e - 1, 7]), (255, 0, 0), 1)
         else:
             cv2.rectangle(result_img, (black[e - 53, 0], black[e - 53, 1]), (black[e - 53, 0] + black[e - 53, 2], black[e - 53, 1] + black[e - 53, 3]), (0, 0, 255), 1)
     return result_img
