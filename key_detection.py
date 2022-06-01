@@ -245,6 +245,20 @@ def key_detection_visual(src):                           #上一个函数的可�
     cv2.waitKey(0)
     return result
 
+def get_keys_visual(bgr, key_list):     
+    black = blackkeys_detection(bgr)
+    white = whitekeys_detection(black, np.shape(bgr)[0])
+    result_img = bgr
+    for e in key_list:
+        if e <= 52:
+            cv2.rectangle(result_img, (white[e, 0], white[e, 1]), (white[e, 2], white[e, 3]), (0, 0, 255), 1)
+            cv2.rectangle(result_img, (white[e, 4], white[e, 5]), (white[e, 6], white[e, 7]), (0, 0, 255), 1)
+        else:
+            cv2.rectangle(result_img, (black[e - 53, 0], black[e - 53, 1]), (black[e - 53, 0] + black[e - 53, 2], black[e - 53, 1] + black[e - 53, 3]), (0, 0, 255), 1)
+    cv2.imshow("result_img", result_img)
+    cv2.waitKey(0)
+
+
 if __name__ == "__main__":
     src = cv2.imread('testFigures_keyboard/219.bmp', cv2.IMREAD_COLOR)
     result = key_detection_visual(src)
