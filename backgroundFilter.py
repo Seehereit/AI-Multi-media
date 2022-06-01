@@ -7,11 +7,16 @@ def moveTowards_filter(bgr,frm,step=0):
     # pdb.set_trace()
     bgr = np.array(bgr,dtype=np.int16)
     frm = np.array(frm,dtype=np.int16)
+    if bgr.shape[0]>frm.shape[0]:
+        frm = np.row_stack((frm,np.zeros((bgr.shape[0]-frm.shape[0],bgr.shape[1]))))
+    elif bgr.shape[0]<frm.shape[0]:
+        frm = frm[0:bgr.shape[0],:]
     # pdb.set_trace()
     res=np.clip(frm + np.clip(abs(bgr-frm),a_min=0,a_max=step) * np.sign(bgr-frm),a_min=0,a_max=255)
     res = res.astype(np.uint8)
     # pdb.set_trace()
     return res
+
 if __name__ == '__main__':
     background = "testFigures/219.bmp"
     frame = "testFigures/303.bmp"

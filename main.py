@@ -2,43 +2,71 @@ import os
 import re
 import numpy as np
 import cv2
+import json
 from utils import savefig_keyboard
 from captureFigures import capture_figures
 # from rgb2gray import rgb2gray
 from RotateFigures import rotate_figure
-from cropFigure import crop_fig
+from cropFigure import crop_fig,crop_fig_bkr
 from mostBrightness import brightness
-from key_detection import blackkeys_detection,whitekeys_detection,key_detection,key_detection_visual
+from key_detection import key_detection
 from backgroundFilter import moveTowards_filter
 from get_key import get_key
-import pdb
 
 def get_background():
+    overwrite = False
+    readfile = True
+    
     max_brighness=0.0
     bkg_img = None
-    p = None
-    for path in sorted(os.listdir("./testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())):            
-        # fig_gray = rgb2gray(path)
-        figurePath = os.path.join("./testFigures",path)
-        fig_gray = cv2.imread(figurePath)
-        # rotate_figure(fig_gray)
-        # import pdb;pdb.set_trace()
-        fig_keyboard,whitekey = crop_fig(fig_gray)
-        if len(whitekey) == 0:
-           continue
-        #savefig_keyboard(path,fig_keyboard)
-        # import pdb;pdb.set_trace()
+    bgr_path = None
+    bgr_mask = None
+    count = 0
+    if not readfile:
+        for path in sorted(os.listdir("./testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())):            
+            # fig_gray = rgb2gray(path)
+            figurePath = os.path.join("./testFigures",path)
+            figure = cv2.imread(figurePath)
+            # rotate_figure(fig_gray)
+            # import pdb;pdb.set_trace()
+            fig_keyboard,mask = crop_fig(figure)
+            if len(fig_keyboard)==0:
+               continue
+           
+            # import pdb;pdb.set_trace()
+            count = count + 1
+            b = brightness(fig_keyboard)
+            # cv2.imshow("result_img",whitekey)
+            # cv2.waitKey(0)
+            print(b,path)
+            if b > max_brighness:
+               max_brighness = b
+               bkg_img = fig_keyboard
+               bgr_path = path
+               bgr_mask = mask
+            if count>300:
+                break
 
-        b = brightness(whitekey)
-        # cv2.imshow("result_img",whitekey)
-        # cv2.waitKey(0)
-        # print(b,iPath)
-        if b > max_brighness:
-           max_brighness = b
-           bkg_img = fig_keyboard
-           p = path
-    print(p,max_brighness)
 
+        print(bgr_path,max_brighness)
+        
+        for path in sorted(os.listdir("./testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())): 
+            figurePath = os.path.join("./testFigures",path)
+            figure = cv2.imread(figurePath)
+            keyboard = crop_fig_bkr(figure, bgr_mask)
+            if keyboard.shape[0]==0 or keyboard.shape[1]==0:
+                continue
+            savefig_keyboard(path,keyboard,overwrite)
+        with open('./data.json', 'w') as f:
+            data={}
+            data["bgr_path"]=bgr_path
+            json.dump(data,f)
+    else:
+        with open('./data.json') as f:
+            data = json.load(f)
+        # print("read {}".format(path))
+        bgr_path = data["bgr_path"]
+        bkg_img = cv2.imread(os.path.join("./testFigures_keyboard",bgr_path))
     return bkg_img
 
 def keyboard_segmentation(bkg_img):
@@ -47,10 +75,11 @@ def keyboard_segmentation(bkg_img):
 
 def get_keys(bgr,keyboard):
     for path in sorted(os.listdir("./testFigures_keyboard"),key = lambda i:int(re.match(r'(\d+)',i).group())):
-        frm = cv2.imread(os.path.join("./testFigures_keyboard",path) , cv2.IMREAD_COLOR)
-        
-        frm = np.array(cv2.cvtColor(frm, cv2.COLOR_BGR2GRAY))
-        
+        frm = cv2.imread(os.path.join("./testFigures_keyboard",path) , cv2.IMREAD_GRAYSCALE)
+        # import pdb;pdb.set_trace()
+        # frm = np.array(cv2.cvtColor(frm, cv2.COLOR_BGR2GRAY))
+        if len(bgr[0])!=len(frm[0]):
+            continue
         res_black = moveTowards_filter(bgr,frm, 12)
         res_white = moveTowards_filter(bgr,frm, 50)
         white = np.clip(bgr.astype(np.int16)-res_white.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
@@ -71,13 +100,12 @@ def get_keys(bgr,keyboard):
                 # if 
                 # keys.append(i)
         print(str(path) + str(keys))
-        # pdb.set_trace()
         # cv2.imshow("result_img", thresh_black )
         # cv2.waitKey(0)
  
 if __name__ == '__main__':
-    video_path = r"\\EVAN\pianoyt_video\video_100.mp4"
-    #capture_figures(video_path,"./testFigures")
+    video_path = r"C:\Users\爱德蒙·唐泰斯\Documents\PRP2\videos\video_101.mp4"
+    # capture_figures(video_path,"./testFigures")
     bgr = get_background()
     # cv2.imshow("result_img", bgr)
     # cv2.waitKey(0)

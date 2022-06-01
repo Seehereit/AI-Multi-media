@@ -1,10 +1,8 @@
-import pdb
-from tokenize import group
+import os
 import cv2
 import numpy as np
-from PIL import Image,ImageStat
+from sklearn.cluster import KMeans
 from functools import cmp_to_key
-from mostBrightness import brightness
 
 def cmp_dist(x,y):
     return -((x[0]-x[2])**2 + (x[1]-x[3])**2 - (y[0]-y[2])**2 - (y[1]-y[3])**2)
@@ -73,7 +71,7 @@ def img_paste(image, polygon_list):
     # cv2.waitKey(0)
     # masked = cv2.merge([r, g, b])
     # return Image.fromarray(masked)
-    return masked
+    return masked,mask
 
 
 def Extend_line(p1,p2, x, y, flag):
@@ -104,6 +102,15 @@ def Extend_line(p1,p2, x, y, flag):
             x4 = int((y4-b)/k)
             return ([x3, y3], [x4, y4])
 
+def crop_fig_bkr(image,mask):
+    image = image[round(image.shape[0]/2):,:]
+    masked = cv2.bitwise_and(image, image, mask=mask)
+    #cv2中的图片是按照bgr顺序生成的，我们需要按照rgb格式生成
+    # fig = cv2.split(masked)
+    masked = masked[[not np.all(masked[i] == 0) for i in range(masked.shape[0])], :]
+    masked = masked[:, [not np.all(masked[:, i] == 0) for i in range(masked.shape[1])]]
+    return masked
+    
 
 def crop_fig(image):
     image = image[round(image.shape[0]/2):,:]
@@ -117,13 +124,12 @@ def crop_fig(image):
     if (houghLine is None):
         return [],[]
     houghLine = houghLine[:,0,:]
-    
+
     if (len(houghLine)<2):
         return [],[]
 
     mask = np.ones(houghLine.shape)
     for x in range(len(houghLine)):
-        # print(abs(houghLine[x][0]-houghLine[x][2]) + abs(houghLine[x][1]-houghLine[x][3]))
         # if ((houghLine[x][0]-houghLine[x][2])**2 + (houghLine[x][1]-houghLine[x][3])**2)<((w/100)**2+(h/100)**2):
         if (abs(houghLine[x][0]-houghLine[x][2]))<((w/60)):
             mask[x,:]=0
@@ -138,7 +144,7 @@ def crop_fig(image):
 
     (h, w) = result.shape[:2]
     if ((p1[0]==p2[0]) or (p3[0]==p4[0])):
-        return [], []
+        return [],[]
     # k1 = (p1[1]-p2[1])/(p1[0]-p2[0])
     # b1 = p2[1] - k1*p2[0]
     # k2 = (p3[1]-p4[1])/(p3[0]-p4[0])
@@ -151,11 +157,7 @@ def crop_fig(image):
     p1,p2=Extend_line(p1,p2,w,h,1)
     p3,p4=Extend_line(p3,p4,w,h,1)
 
-    result = img_paste(result,sort_points_clockwise([p1,p2,p4,p3]))
-    # cv2.imshow("result_img", result)
-    # cv2.waitKey(0)
-
-    # import pdb;pdb.set_trace()
+    result, crop_mask = img_paste(result,sort_points_clockwise([p1,p2,p4,p3]))
     result = result.copy()
     (h, w) = result.shape[:2]
 
@@ -185,15 +187,18 @@ def crop_fig(image):
         # if (y1 > 5) and (y2 > 5) and (y2 < h-5) and (y2 < h-5):
             lines_crop.append(line)
             # cv2.line(result,(x1,y1),(x2,y2),(125,125,125),5)
-    if (len(lines_crop)<2):
-        return [],[]
     
+
     lines_crop = np.array(sorted(lines_crop, key=cmp_to_key(lambda a, b: cmp_dist2(a,b))))
-    from sklearn.cluster import KMeans
+    # import pdb;pdb.set_trace()
+    if len(lines_crop)<2 or (np.array(lines_crop[:,(1,3)])).std()<=1:
+        return [],[]
     kmeans = KMeans(n_clusters=2, random_state=0).fit(lines_crop[:,(1,3)])
     mask = kmeans.labels_
     group1 = lines_crop[mask==0]
     group2 = lines_crop[mask==1]
+    if len(group1)==0 or len(group2)==0:
+        return [],[]
     if (group1[:,1].mean()+group1[:,3].mean()) > (group2[:,1].mean()+group2[:,3].mean()):
         keyboard_line = group2.astype(np.int32)
         white_line = group1.astype(np.int32)
@@ -210,7 +215,7 @@ def crop_fig(image):
     # p1,p2,p3,p4=lines_crop[0][0:2],lines_crop[0][2:4],lines_crop[-1][0:2],lines_crop[-1][2:4]
     
     if ((p1[0]==p2[0]) or (p3[0]==p4[0])):
-        return [], []
+        return [],[]
     # k1 = (p1[1]-p2[1])/(p1[0]-p2[0])
     # b1 = p2[1] - k1*p2[0]
     # k2 = (p3[1]-p4[1])/(p3[0]-p4[0])
@@ -224,22 +229,32 @@ def crop_fig(image):
     # import pdb;pdb.set_trace()
     
     pp1, pp2 = Extend_line(p3,p4,w,h,1)
-    crop_result = img_paste(result,sort_points_clockwise([[0,h],[w,h],pp1,pp2]))
+    crop_result,crop_mask2 = img_paste(result,sort_points_clockwise([[0,h],[w,h],pp1,pp2]))
     # cv2.imshow("result_img", crop_result)
     # cv2.waitKey(0)
+    
+    upper = 0
+    while upper<crop_mask.shape[0] and crop_mask[upper].sum()==0:
+        upper = upper + 1
+    crop_mask[upper:upper+crop_mask2.shape[0],:]=crop_mask2
+        
+    # cv2.imshow("result_img", result)
+    # cv2.waitKey(0)
+
+    # import pdb;pdb.set_trace()
 
 
     # p1 = [0,round(b1)]
     # p2 = [w,round(w*k1+b1)]
     # p3 = [0,h]
     # p4 = [w,h]
-    pp1, pp2 = Extend_line(p1,p2,w,h,1)
-    whitekey = img_paste(result,sort_points_clockwise([pp1,pp2,[0,h],[w,h]]))
+    # pp1, pp2 = Extend_line(p1,p2,w,h,1)
+    # whitekey = img_paste(result,sort_points_clockwise([pp1,pp2,[0,h],[w,h]]))
     
     # cv2.imshow('Result', whitekey)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
-    return crop_result, whitekey
+    return crop_result,crop_mask
 
 
 if __name__ == '__main__':
