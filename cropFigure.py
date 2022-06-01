@@ -122,11 +122,11 @@ def crop_fig(image):
     houghLine=cv2.HoughLinesP(edges,1,np.pi/180,118)
 
     if (houghLine is None):
-        return [],[]
+        return [],[],[]
     houghLine = houghLine[:,0,:]
 
     if (len(houghLine)<2):
-        return [],[]
+        return [],[],[]
 
     mask = np.ones(houghLine.shape)
     for x in range(len(houghLine)):
@@ -138,13 +138,13 @@ def crop_fig(image):
     # import pdb;pdb.set_trace()    
     lines = sorted(houghLine, key=cmp_to_key(lambda a, b: cmp_dist(a,b)))  #这里对最后一个参数使用了经验型的值
     if (len(houghLine)<2):
-        return [],[]
+        return [],[],[]
 
     p1,p2,p3,p4=lines[0][0:2],lines[0][2:4],lines[1][0:2],lines[1][2:4]
 
     (h, w) = result.shape[:2]
     if ((p1[0]==p2[0]) or (p3[0]==p4[0])):
-        return [],[]
+        return [],[],[]
     # k1 = (p1[1]-p2[1])/(p1[0]-p2[0])
     # b1 = p2[1] - k1*p2[0]
     # k2 = (p3[1]-p4[1])/(p3[0]-p4[0])
@@ -166,11 +166,11 @@ def crop_fig(image):
     houghLine = cv2.HoughLinesP(edges,1,np.pi/180,118)
     
     if (houghLine is None):
-        return [],[]
+        return [],[],[]
     houghLine = houghLine[:,0,:]
 
     if (len(houghLine)<2):
-        return [],[]
+        return [],[],[]
     # mask = np.ones(houghLine.shape)
     # for x in range(len(houghLine)):
     #     # if ((houghLine[x][0]-houghLine[x][2])**2 + (houghLine[x][1]-houghLine[x][3])**2)<((w/60)**2+(h/60)**2):
@@ -192,13 +192,13 @@ def crop_fig(image):
     lines_crop = np.array(sorted(lines_crop, key=cmp_to_key(lambda a, b: cmp_dist2(a,b))))
     # import pdb;pdb.set_trace()
     if len(lines_crop)<2 or (np.array(lines_crop[:,(1,3)])).std()<=1:
-        return [],[]
+        return [],[],[]
     kmeans = KMeans(n_clusters=2, random_state=0).fit(lines_crop[:,(1,3)])
     mask = kmeans.labels_
     group1 = lines_crop[mask==0]
     group2 = lines_crop[mask==1]
     if len(group1)==0 or len(group2)==0:
-        return [],[]
+        return [],[],[]
     if (group1[:,1].mean()+group1[:,3].mean()) > (group2[:,1].mean()+group2[:,3].mean()):
         keyboard_line = group2.astype(np.int32)
         white_line = group1.astype(np.int32)
@@ -215,7 +215,7 @@ def crop_fig(image):
     # p1,p2,p3,p4=lines_crop[0][0:2],lines_crop[0][2:4],lines_crop[-1][0:2],lines_crop[-1][2:4]
     
     if ((p1[0]==p2[0]) or (p3[0]==p4[0])):
-        return [],[]
+        return [],[],[]
     # k1 = (p1[1]-p2[1])/(p1[0]-p2[0])
     # b1 = p2[1] - k1*p2[0]
     # k2 = (p3[1]-p4[1])/(p3[0]-p4[0])
@@ -248,13 +248,13 @@ def crop_fig(image):
     # p2 = [w,round(w*k1+b1)]
     # p3 = [0,h]
     # p4 = [w,h]
-    # pp1, pp2 = Extend_line(p1,p2,w,h,1)
-    # whitekey = img_paste(result,sort_points_clockwise([pp1,pp2,[0,h],[w,h]]))
+    pp1, pp2 = Extend_line(p1,p2,w,h,1)
+    whitekey,_ = img_paste(result,sort_points_clockwise([pp1,pp2,[0,h],[w,h]]))
     
     # cv2.imshow('Result', whitekey)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
-    return crop_result,crop_mask
+    return crop_result,whitekey,crop_mask
 
 
 if __name__ == '__main__':

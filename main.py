@@ -29,13 +29,13 @@ def get_background():
             figure = cv2.imread(figurePath)
             # rotate_figure(fig_gray)
             # import pdb;pdb.set_trace()
-            fig_keyboard,mask = crop_fig(figure)
-            if len(fig_keyboard)==0:
+            fig_keyboard,whitekey,mask = crop_fig(figure)
+            if len(fig_keyboard)==0 or len(whitekey)==0:
                continue
            
             # import pdb;pdb.set_trace()
             count = count + 1
-            b = brightness(fig_keyboard)
+            b = brightness(whitekey)
             # cv2.imshow("result_img",whitekey)
             # cv2.waitKey(0)
             print(b,path)
@@ -73,11 +73,11 @@ def keyboard_segmentation(bkg_img):
     keyboard, black_keys, white_keys = key_detection(bkg_img)
     return keyboard, black_keys, white_keys
 
-def get_keys(bgr,keyboard):
+def get_keys(bgr,keyboard, black_keys, white_keys):
     for path in sorted(os.listdir("./testFigures_keyboard"),key = lambda i:int(re.match(r'(\d+)',i).group())):
-        frm = cv2.imread(os.path.join("./testFigures_keyboard",path) , cv2.IMREAD_GRAYSCALE)
+        frame = cv2.imread(os.path.join("./testFigures_keyboard",path) , cv2.IMREAD_COLOR)
         # import pdb;pdb.set_trace()
-        # frm = np.array(cv2.cvtColor(frm, cv2.COLOR_BGR2GRAY))
+        frm = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
         if len(bgr[0])!=len(frm[0]):
             continue
         res_black = moveTowards_filter(bgr,frm, 12)
@@ -100,21 +100,19 @@ def get_keys(bgr,keyboard):
                 # if 
                 # keys.append(i)
         print(str(path) + str(keys))
-        # cv2.imshow("result_img", thresh_black )
-        # cv2.waitKey(0)
+        result_img_visual = get_keys_visual(frame, black_keys, white_keys, keys)
+        cv2.imshow("result_img_visual", result_img_visual )
+        cv2.waitKey(0)
 
 
 if __name__ == '__main__':
-    video_path = r"\\EVAN\pianoyt_video\video_100.mp4"
-    #capture_figures(video_path,"./testFigures")
+    video_path = r"C:\Users\爱德蒙·唐泰斯\Documents\PRP2\videos\video_102.mp4"
+    # capture_figures(video_path,"./testFigures")
     bgr = get_background()
     # cv2.imshow("result_img", bgr)
     # cv2.waitKey(0)
     keyboard, black_keys, white_keys = keyboard_segmentation(bgr)
-    result_img = get_keys_visual(bgr, black_keys, white_keys, [29, 62, 71])
-    cv2.imshow("result_img", result_img)
-    cv2.waitKey(0)
     bgr = np.array(cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY))
-    #get_keys(bgr,keyboard)
+    get_keys(bgr,keyboard,black_keys, white_keys)
     # pdb.set_trace()
 
