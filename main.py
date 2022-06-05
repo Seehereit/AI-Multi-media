@@ -1,5 +1,6 @@
 import os
 import re
+from tkinter.tix import Tree
 import numpy as np
 import cv2
 import json
@@ -80,7 +81,7 @@ def get_keys(bgr,keyboard, black_keys, white_keys):
         frm = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
         if len(bgr[0])!=len(frm[0]):
             continue
-        res_black = moveTowards_filter(bgr,frm, 12)
+        res_black = moveTowards_filter(bgr,frm, 30)
         res_white = moveTowards_filter(bgr,frm, 50)
         white = np.clip(bgr.astype(np.int16)-res_white.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
         black = np.clip(res_black.astype(np.int16)-bgr.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
@@ -106,8 +107,8 @@ def get_keys(bgr,keyboard, black_keys, white_keys):
 
 
 if __name__ == '__main__':
-    video_path = r"C:\Users\爱德蒙·唐泰斯\Documents\PRP2\videos\video_102.mp4"
-    # capture_figures(video_path,"./testFigures")
+    video_path = r"\\EVAN\pianoyt_video\video_100.mp4"
+    capture_figures(video_path,"./testFigures")
     bgr = get_background()
     # cv2.imshow("result_img", bgr)
     # cv2.waitKey(0)

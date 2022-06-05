@@ -20,8 +20,8 @@ def get_key(target,mask, i):
     #    if ((upper+lower)/2 > target_upper):
     #        return True
     if i <= 52:
-        if target_upper - upper < (lower - upper) / 10:
+        if target_upper - upper < (lower - upper) / 4:
             return True
-    elif target[mask].sum()/255 > int(mask.sum()*2/5) and ((upper+lower)/2 > target_upper):
+    elif target_upper - upper < (lower - upper) / 5 or target[mask].sum()/255 > int(mask.sum()*1/5):
         return True
     return False
