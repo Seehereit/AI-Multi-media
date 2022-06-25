@@ -59,9 +59,10 @@ class PianoRollAudioDataset(Dataset):
                     elif e == 2:
                         print("image %d not exist, replaced with full zero" % cur_num)
                         mix = np.zeros((128, 640), dtype=np.uint8)
-                mix = torch.ShortTensor(mix.reshape((1, 128, 640))).to(self.device)
-                mix_list.append(mix)   
-            result['image'] = np.concatenate(mix_list, axis=0)
+                #mix = torch.ShortTensor(mix.reshape((1, 128, 640))).to(self.device)
+                mix_list.append(mix.reshape((1, 128, 640))) 
+            image = torch.ShortTensor(np.concatenate(mix_list, axis=0)).to(self.device)
+            result['image'] = image
             #512张图
             # for i in range(image_begin, image_end + 1):
 
