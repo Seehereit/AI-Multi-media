@@ -1,0 +1,138 @@
+{
+  "artifacts": [],
+  "command": "train",
+  "experiment": {
+    "base_dir": "e:\\code\\git_project\\seehereit\\AI-Multi-media\\mixModel",
+    "dependencies": [
+      "numpy==1.19.2",
+      "sacred==0.7.4",
+      "torch==1.6.0",
+      "tqdm==4.63.0"
+    ],
+    "mainfile": "main.py",
+    "name": "train_transcriber",
+    "repositories": [
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      }
+    ],
+    "sources": [
+      [
+        "dataset.py",
+        "_sources\\dataset_8ec0616a0afed813053f8170f8f72413.py"
+      ],
+      [
+        "decoding.py",
+        "_sources\\decoding_709f1980bf5b222de7a417e0f416554e.py"
+      ],
+      [
+        "evaluate.py",
+        "_sources\\evaluate_3e23f8cfffb7705b5a23104df60192fa.py"
+      ],
+      [
+        "main.py",
+        "_sources\\main_dddccbc820c6536f774464f661a92704.py"
+      ],
+      [
+        "midi.py",
+        "_sources\\midi_909325eb933bc0ca9c6a680ecafeecaa.py"
+      ],
+      [
+        "model_mix.py",
+        "_sources\\model_mix_063b2f71adb24a3d3290bdfc00f6d42d.py"
+      ],
+      [
+        "utils.py",
+        "_sources\\utils_d761f98933ab4b859e6e0d4f81c78c98.py"
+      ]
+    ]
+  },
+  "fail_trace": [
+    "Traceback (most recent call last):\n",
+    "  File \"C:\\Anaconda3\\envs\\deeplearning\\lib\\site-packages\\sacred\\config\\captured_function.py\", line 46, in captured_function\n    result = wrapped(*args, **kwargs)\n",
+    "  File \"e:\\code\\git_project\\seehereit\\AI-Multi-media\\mixModel\\main.py\", line 61, in train\n    print_config(ex.current_run)\n",
+    "  File \"C:\\Anaconda3\\envs\\deeplearning\\lib\\site-packages\\sacred\\commands.py\", line 62, in print_config\n    print(_format_config(final_config, config_mods))\n",
+    "  File \"C:\\Anaconda3\\envs\\deeplearning\\lib\\site-packages\\sacred\\commands.py\", line 156, in _format_config\n    lines.append(_format_entry(indent, entry))\n",
+    "  File \"C:\\Anaconda3\\envs\\deeplearning\\lib\\site-packages\\sacred\\commands.py\", line 139, in _format_entry\n    assign = indent + entry.key + \" = \" + PRINTER.pformat(entry.value)\n",
+    "  File \"C:\\Anaconda3\\envs\\deeplearning\\lib\\pprint.py\", line 153, in pformat\n    self._format(object, sio, 0, 0, {}, 0)\n",
+    "  File \"C:\\Anaconda3\\envs\\deeplearning\\lib\\pprint.py\", line 170, in _format\n    rep = self._repr(object, context, level)\n",
+    "  File \"C:\\Anaconda3\\envs\\deeplearning\\lib\\pprint.py\", line 404, in _repr\n    repr, readable, recursive = self.format(object, context.copy(),\n",
+    "  File \"C:\\Anaconda3\\envs\\deeplearning\\lib\\site-packages\\sacred\\commands.py\", line 40, in _non_unicode_repr\n    repr_string, isreadable, isrecursive = pprint._safe_repr(objekt, context,\n",
+    "TypeError: _safe_repr() missing 1 required positional argument: 'sort_dicts'\n"
+  ],
+  "heartbeat": "2022-06-25T07:24:38.541654",
+  "host": {
+    "ENV": {},
+    "cpu": "AMD Ryzen 5 1400 Quad-Core Processor",
+    "hostname": "DESKTOP-N362D6G",
+    "os": [
+      "Windows",
+      "Windows-10-10.0.19041-SP0"
+    ],
+    "python_version": "3.8.8"
+  },
+  "meta": {
+    "command": "train",
+    "options": {
+      "--beat_interval": null,
+      "--capture": null,
+      "--comment": null,
+      "--debug": false,
+      "--enforce_clean": false,
+      "--file_storage": null,
+      "--force": false,
+      "--help": false,
+      "--loglevel": null,
+      "--mongo_db": null,
+      "--name": null,
+      "--pdb": false,
+      "--print_config": false,
+      "--priority": null,
+      "--queue": false,
+      "--sql": null,
+      "--tiny_db": null,
+      "--unobserved": false,
+      "COMMAND": null,
+      "UPDATE": [],
+      "help": false,
+      "with": false
+    }
+  },
+  "resources": [],
+  "result": null,
+  "start_time": "2022-06-25T07:24:38.428624",
+  "status": "FAILED",
+  "stop_time": "2022-06-25T07:24:38.557655"
+}

@@ -1,0 +1,125 @@
+{
+  "artifacts": [],
+  "command": "train",
+  "experiment": {
+    "base_dir": "e:\\code\\git_project\\seehereit\\AI-Multi-media\\mixModel",
+    "dependencies": [
+      "numpy==1.19.2",
+      "sacred==0.8.2",
+      "torch==1.6.0",
+      "tqdm==4.63.0"
+    ],
+    "mainfile": "main.py",
+    "name": "train_transcriber",
+    "repositories": [
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      },
+      {
+        "commit": "8ac5705f0f0de2c5d9bac2a96322b712adcbe183",
+        "dirty": true,
+        "url": "https://github.com/Seehereit/AI-Multi-media/"
+      }
+    ],
+    "sources": [
+      [
+        "dataset.py",
+        "_sources\\dataset_c1b638eb1cbad549c1f3cc023810cdb5.py"
+      ],
+      [
+        "decoding.py",
+        "_sources\\decoding_709f1980bf5b222de7a417e0f416554e.py"
+      ],
+      [
+        "evaluate.py",
+        "_sources\\evaluate_3e23f8cfffb7705b5a23104df60192fa.py"
+      ],
+      [
+        "main.py",
+        "_sources\\main_2b7167f6a95923e515d5a04542d574bc.py"
+      ],
+      [
+        "midi.py",
+        "_sources\\midi_909325eb933bc0ca9c6a680ecafeecaa.py"
+      ],
+      [
+        "model_mix.py",
+        "_sources\\model_mix_063b2f71adb24a3d3290bdfc00f6d42d.py"
+      ],
+      [
+        "utils.py",
+        "_sources\\utils_d761f98933ab4b859e6e0d4f81c78c98.py"
+      ]
+    ]
+  },
+  "heartbeat": "2022-06-25T08:02:24.139527",
+  "host": {
+    "ENV": {},
+    "cpu": "Unknown",
+    "hostname": "DESKTOP-N362D6G",
+    "os": [
+      "Windows",
+      "Windows-10-10.0.19041-SP0"
+    ],
+    "python_version": "3.8.8"
+  },
+  "meta": {
+    "command": "train",
+    "options": {
+      "--beat-interval": null,
+      "--capture": null,
+      "--comment": null,
+      "--debug": false,
+      "--enforce_clean": false,
+      "--file_storage": null,
+      "--force": false,
+      "--help": false,
+      "--loglevel": null,
+      "--mongo_db": null,
+      "--name": null,
+      "--pdb": false,
+      "--print-config": false,
+      "--priority": null,
+      "--queue": false,
+      "--s3": null,
+      "--sql": null,
+      "--tiny_db": null,
+      "--unobserved": false,
+      "COMMAND": null,
+      "UPDATE": [],
+      "help": false,
+      "with": false
+    }
+  },
+  "resources": [],
+  "result": null,
+  "start_time": "2022-06-25T08:01:24.012687",
+  "status": "RUNNING"
+}
