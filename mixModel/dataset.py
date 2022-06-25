@@ -55,7 +55,7 @@ class PianoRollAudioDataset(Dataset):
                     mix_name = "{}\\mix\\{:>03d}.bmp".format(image_path, cur_num + e)
                     if os.path.exists(mix_name):
                         mix = cv2.imread(mix_name, cv2.IMREAD_GRAYSCALE)
-                        mix = cv2.resize(mix, (64, 320))
+                        mix = cv2.resize(mix, (320, 64))
                         break
                     elif e == 2:
                         print("image %d not exist, replaced with full zero" % cur_num)
