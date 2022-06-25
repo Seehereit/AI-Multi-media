@@ -61,7 +61,7 @@ class PianoRollAudioDataset(Dataset):
                         mix = np.zeros((128, 640), dtype=np.uint8)
                 #mix = torch.ShortTensor(mix.reshape((1, 128, 640))).to(self.device)
                 mix_list.append(mix.reshape((1, 128, 640))) 
-            image = torch.ShortTensor(np.concatenate(mix_list, axis=0)).to(self.device)
+            image = torch.Tensor(np.concatenate(mix_list, axis=0)).to(self.device)
             result['image'] = image
             #512张图
             # for i in range(image_begin, image_end + 1):
@@ -224,7 +224,7 @@ class MAPS(PianoRollAudioDataset):
         return sorted(zip(flacs, tsvs))
 
 class SIGHT(PianoRollAudioDataset):
-    def __init__(self, path='data/SIGHT', groups=None, sequence_length=None, seed=42, device=DEFAULT_DEVICE):
+    def __init__(self, path='mixModel/data/SIGHT', groups=None, sequence_length=None, seed=42, device=DEFAULT_DEVICE):
         super().__init__(path, groups if groups is not None else ['train'], sequence_length, seed, device)
 
     @classmethod
