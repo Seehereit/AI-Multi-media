@@ -244,7 +244,7 @@ class res_inception2d(nn.Module):
         x = self.maxpool_3332(x) # [64, 32, 160]
         x = self.conv_1111(x) # 
         x = self.conv_3331(x) # [192, 32, 160]
-        x = self.maxpool_3332(x) # [192, 16, 80]
+        # x = self.maxpool_3332(x) # [192, 16, 80]
         # layer 2
         x = self.inception1(x) # [256, 16, 80]
         x = self.inception2(x)

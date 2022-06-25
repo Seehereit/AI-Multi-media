@@ -29,7 +29,7 @@ def config():
     iterations = 5
     resume_iteration = None
     checkpoint_interval = 1
-    train_on = 'MAPS'
+    train_on = 'Sight to Sound'
 
     batch_size = 1      #8
     sequence_length = 327680 // 4
@@ -85,7 +85,6 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
     loop = tqdm(range(resume_iteration + 1, iterations + 1))
     for i, batch in zip(loop, cycle(loader)):
         predictions, losses = model.run_on_batch(batch)
-        
         loss = sum(losses.values())
         optimizer.zero_grad()
         loss.backward()

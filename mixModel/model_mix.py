@@ -53,6 +53,12 @@ class Net(nn.Module):
 
         return predictions, losses
     
+    def velocity_loss(self, velocity_pred, velocity_label, onset_label):
+        denominator = onset_label.sum()
+        if denominator.item() == 0:
+            return denominator
+        else:
+            return (onset_label * (velocity_label - velocity_pred) ** 2).sum() / denominator
 
 # from torchinfo import summary
 # model = Net().to(device)
