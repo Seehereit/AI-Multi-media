@@ -225,15 +225,20 @@ class MAPS(PianoRollAudioDataset):
         return sorted(zip(flacs, tsvs))
 
 class SIGHT(PianoRollAudioDataset):
-    def __init__(self, path='mixModel/data/SIGHT', groups=None, sequence_length=None, seed=42, device=DEFAULT_DEVICE):
+    def __init__(self, path='mixModel/data/SIGHT', groups=None, sequence_length=None, seed=42, device=DEFAULT_DEVICE, data_path=None):
+        self.data_path = data_path
         super().__init__(path, groups if groups is not None else ['train'], sequence_length, seed, device)
+        
 
     @classmethod
     def available_groups(cls):
         return ['train', 'validation', 'test']
 
     def files(self, group):
-        videos = glob(os.path.join('mixModel/data/SIGHT', 'video', 'video_*.mp4'))       #dataset.py和data文件夹不在同一目录，可能会报错？
+        if self.data_path is not None:
+            videos = self.data_path
+        else:
+            videos = glob(os.path.join('mixModel/data/SIGHT', 'video', 'video_*.mp4'))       
         flacs = [v.replace('\\video\\', '\\flac\\').replace('.mp4', '.flac') for v in videos]
         tsvs = [v.replace('\\video\\', '\\tsv\\').replace('video', 'audio').replace('.mp4', '.tsv') for v in videos]
         image_paths = [v.replace('\\video\\', '\\image\\').replace('.mp4', '') for v in videos]
