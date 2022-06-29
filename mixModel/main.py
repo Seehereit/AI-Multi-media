@@ -90,9 +90,9 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
     for e in range(K):
         print("*"*25,"第", e + 1,"折","*"*25)
         train_path, validation_path = get_kfold_data(K, e, data_path)
-        train_set = SIGHT(sequence_length=sequence_length, groups='train', data_path=train_path)
+        train_set = SIGHT(sequence_length=sequence_length, groups=['train'], data_path=train_path)
         loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
-        validation_dataset = SIGHT(sequence_length=sequence_length, groups='validation', data_path=validation_path)
+        validation_dataset = SIGHT(sequence_length=sequence_length, groups=['validation'], data_path=validation_path)
         # create network and optimizer
         if resume_iteration is None:
             model = Net().to(device)
