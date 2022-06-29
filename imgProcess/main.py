@@ -15,8 +15,8 @@ from backgroundFilter import moveTowards_filter
 from get_key import get_key
 
 def get_background():
-    overwrite = False
-    readfile = True
+    overwrite = True
+    readfile = False
     
     max_brighness=0.0
     bkg_img = None

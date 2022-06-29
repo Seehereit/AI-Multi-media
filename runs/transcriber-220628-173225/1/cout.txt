@@ -1,0 +1,20 @@
+Configuration ([34mmodified[0m, [32madded[0m, [31mtypechanged[0m, [2mdoc[0m):
+  batch_size = 1                     [2m# 8[0m
+  checkpoint_interval = 1
+  clip_gradient_norm = 3
+  device = 'cpu'
+  iterations = 5
+  learning_rate = 0.0006             [2m# print(f'Reducing batch size to {batch_size} and sequence_length to {sequence_length} to save memory')[0m
+  learning_rate_decay_rate = 0.98
+  learning_rate_decay_steps = 10000
+  leave_one_out = None
+  logdir = 'runs/transcriber-220628-173225'
+  model_complexity = 48
+  resume_iteration = None
+  seed = 668084259                   [2m# the random seed for this experiment[0m
+  sequence_length = 81920
+  train_on = 'Sight to Sound'
+  validation_interval = 500
+  validation_length = 81920
+************************* 第 1 折 *************************
+Loading 5 groups of SIGHT at mixModel/data/SIGHT
