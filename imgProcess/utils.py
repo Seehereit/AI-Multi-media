@@ -1,7 +1,7 @@
 import os
 import cv2 as cv
-def savefig_keyboard(path,fig,overwrite):
-    dir_path = 'testFigures_keyboard'
+def savefig_keyboard(current_pwd, path,fig,overwrite):
+    dir_path = current_pwd + 'testFigures_keyboard'
     if not os.path.isdir(dir_path):
         os.makedirs(dir_path) 
     fig_path = os.path.join(dir_path,path)

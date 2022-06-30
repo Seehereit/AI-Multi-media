@@ -27,7 +27,7 @@ for image_path in image_paths:
         data = json.load(f)
     # print("read {}".format(path))
     bgr_path = data["bgr_path"]
-    bgr = cv2.imread(os.path.join("./testFigures_keyboard",bgr_path))
+    bgr = cv2.imread(os.path.join(current_pwd + "testFigures_keyboard",bgr_path))
     bgr = np.array(cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY))
     if not os.path.exists(current_pwd + 'black'):
         for path in sorted(os.listdir(current_pwd + "testFigures_keyboard"),key = lambda i:int(re.match(r'(\d+)',i).group())):
