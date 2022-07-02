@@ -4,7 +4,7 @@ from tkinter.tix import Tree
 import numpy as np
 import cv2
 import json
-from utils import savefig_keyboard
+from img_utils import savefig_keyboard
 from captureFigures import capture_figures
 # from rgb2gray import rgb2gray
 from RotateFigures import rotate_figure

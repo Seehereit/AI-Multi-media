@@ -42,6 +42,9 @@ class PianoRollAudioDataset(Dataset):
             #黑键 白键图 上下叠在一起 每张图64*640
             # batch * 640 * 128 * 640             
             begin = step_begin * HOP_LENGTH
+            #写一个json文件，dataset_config, 记录每一段,取5秒160帧，读取的信息存在json，字典的内容还是一个字典，记录音频起始终止，图片起始终止
+            #第一个数据点是第一张图片，每一个数据点是在前面基础加sequence_length // 2 ，audio全零并且结束位置在audio总长度的后十分之一
+            # 
             end = begin + self.sequence_length
             image_path = data['image_path']
             #image_length = audio_length / SAMPLE_RATE * FPS
@@ -248,38 +251,6 @@ class SIGHT(PianoRollAudioDataset):
         assert(all(os.path.isfile(video) for video in videos))    
         for image_path in image_paths:
             if os.path.exists(image_path):      #如果文件夹存在则视为已经图像处理完成，所以别动文件夹里的文件
-                continue
-            # else:
-                # os.makedirs(image_path)
-                # current_pwd = image_path + "\\"
-                # video = image_path.replace('\\image\\', '\\video\\') + '.mp4'
-                # capture_figures(video, current_pwd + 'testFigures')
-                # #后面的部分放到load函数里
-
-                # bgr = get_background(current_pwd)
-                # testfigures = glob(os.path.join(current_pwd, 'testFigures', '*.bmp'))
-                # for item in testfigures:
-                #     os.remove(item)
-                # os.removedirs(current_pwd + 'testFigures')
-                # bgr = np.array(cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY))
-                # for path in sorted(os.listdir(current_pwd + "testFigures_keyboard"),key = lambda i:int(re.match(r'(\d+)',i).group())):
-                #     frame = cv2.imread(os.path.join(current_pwd + "testFigures_keyboard",path) , cv2.IMREAD_COLOR)
-                #     # import pdb;pdb.set_trace()
-                #     frm = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
-                #     if len(bgr[0])!=len(frm[0]):
-                #         continue
-                #     res_black = moveTowards_filter(bgr,frm, 30)
-                #     res_white = moveTowards_filter(bgr,frm, 50)
-                #     white = np.clip(bgr.astype(np.int16)-res_white.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
-                #     white = cv2.resize(white, (640, 64))
-                #     os.makedirs(current_pwd + 'white', exist_ok=True)
-                #     cv2.imwrite(current_pwd + 'white\\' + path, white)
-                #     black = np.clip(res_black.astype(np.int16)-bgr.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
-                #     black = cv2.resize(black, (640, 64))
-                #     os.makedirs(current_pwd + 'black', exist_ok=True)
-                #     cv2.imwrite(current_pwd + 'black\\' + path, black)
-                #     mix = np.concatenate((black, white), axis=0)
-                #     os.makedirs(current_pwd + 'mix', exist_ok=True)
-                #     cv2.imwrite(current_pwd + 'mix\\' + path, mix)                    
+                continue             
                 
         return sorted(zip(flacs, tsvs, image_paths))   
