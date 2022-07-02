@@ -33,8 +33,8 @@ def config():
     checkpoint_interval = 1
     train_on = 'Sight to Sound'
 
-    batch_size = 3      #8
-    sequence_length = 327680 // 4
+    batch_size = 5      #8
+    sequence_length = SEQUENCE_LENGTH
     model_complexity = 48
 
     # if torch.cuda.is_available() and torch.cuda.get_device_properties(torch.cuda.current_device()).total_memory < 10e9:

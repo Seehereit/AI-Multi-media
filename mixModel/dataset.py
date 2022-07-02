@@ -27,37 +27,40 @@ class PianoRollAudioDataset(Dataset):
               f"of {self.__class__.__name__} at {path}")
         for group in groups:
             for input_files in tqdm(self.files(group), desc='Loading group %s' % group):
-                self.data.append(self.load(*input_files))
+                data_dict = self.load(*input_files)
+                with open(data_dict["image_path"] + "\\dataset_config.json") as f:
+                    dataset_config = json.load(f)
+                cur_data = {}
+                for e in dataset_config:
+                    cur_data["path"] = data_dict["path"]
+                    cur_data["audio"] = data_dict["audio"][dataset_config[e]["audio_begin"]:dataset_config[e]["audio_end"]]
+                    cur_data["label"] = data_dict["label"][(dataset_config[e]["audio_begin"]//HOP_LENGTH):(dataset_config[e]["audio_end"]//HOP_LENGTH), :]
+                    cur_data["velocity"] = data_dict["velocity"][(dataset_config[e]["audio_begin"]//HOP_LENGTH):(dataset_config[e]["audio_end"]//HOP_LENGTH), :]
+                    cur_data["image_path"] = data_dict["image_path"]
+                    cur_data["audio_begin"], cur_data["audio_end"] = dataset_config[e]["audio_begin"], dataset_config[e]["audio_end"]
+                    self.data.append(cur_data)
 
     def __getitem__(self, index):
         data = self.data[index]         
         result = dict(path=data['path'])
 
         if self.sequence_length is not None:        #327680
-            audio_length = len(data['audio'])
-            step_begin = self.random.randint(audio_length - self.sequence_length) // HOP_LENGTH 
             # 没图像的部分传一张全黑的进去
-            n_steps = self.sequence_length // HOP_LENGTH    # 640
-            step_end = step_begin + n_steps
+
             #黑键 白键图 上下叠在一起 每张图64*640
             # batch * 640 * 128 * 640             
-            begin = step_begin * HOP_LENGTH
-            end = begin + self.sequence_length
-            image_path = data['image_path']
-            #image_length = audio_length / SAMPLE_RATE * FPS
-            # image_begin = begin // SAMPLE_RATE * FPS
-            # image_end = image_begin + self.sequence_length // SAMPLE_RATE * FPS
-            #result['rgb'] = []
+            image_path = data["image_path"]
+            print("current image path is {}".format(image_path))
             mix_list = []
-            for i in range(begin, end, HOP_LENGTH):     #640张图
+            for i in range(data["audio_begin"], data["audio_end"], HOP_LENGTH):     #640张图
                 cur_num = i * FPS // SAMPLE_RATE 
-                for e in range(0, 3):       #如果一张图找不到，至多找3次
+                for e in range(0, 2):       #如果一张图找不到，至多找2次
                     mix_name = "{}\\mix\\{:>03d}.bmp".format(image_path, cur_num + e)
                     if os.path.exists(mix_name):
                         mix = cv2.imread(mix_name, cv2.IMREAD_GRAYSCALE)
                         mix = cv2.resize(mix, (320, 64))
                         break
-                    elif e == 2:
+                    elif e == 1:
                         print("image %d not exist, replaced with full zero" % cur_num)
                         mix = np.zeros((64, 320), dtype=np.uint8)
                 #mix = torch.ShortTensor(mix.reshape((1, 128, 640))).to(self.device)
@@ -84,9 +87,9 @@ class PianoRollAudioDataset(Dataset):
             #     img = torch.ShortTensor(img).to(self.device)
             #     result['image'].append(img)
                 
-            result['audio'] = data['audio'][begin:end].to(self.device)
-            result['label'] = data['label'][step_begin:step_end, :].to(self.device)
-            result['velocity'] = data['velocity'][step_begin:step_end, :].to(self.device)
+            result['audio'] = data['audio'].to(self.device)
+            result['label'] = data['label'].to(self.device)
+            result['velocity'] = data['velocity'].to(self.device)
         else:
             result['audio'] = data['audio'].to(self.device)
             result['label'] = data['label'].to(self.device)
@@ -248,38 +251,6 @@ class SIGHT(PianoRollAudioDataset):
         assert(all(os.path.isfile(video) for video in videos))    
         for image_path in image_paths:
             if os.path.exists(image_path):      #如果文件夹存在则视为已经图像处理完成，所以别动文件夹里的文件
-                continue
-            # else:
-                # os.makedirs(image_path)
-                # current_pwd = image_path + "\\"
-                # video = image_path.replace('\\image\\', '\\video\\') + '.mp4'
-                # capture_figures(video, current_pwd + 'testFigures')
-                # #后面的部分放到load函数里
-
-                # bgr = get_background(current_pwd)
-                # testfigures = glob(os.path.join(current_pwd, 'testFigures', '*.bmp'))
-                # for item in testfigures:
-                #     os.remove(item)
-                # os.removedirs(current_pwd + 'testFigures')
-                # bgr = np.array(cv2.cvtColor(bgr, cv2.COLOR_BGR2GRAY))
-                # for path in sorted(os.listdir(current_pwd + "testFigures_keyboard"),key = lambda i:int(re.match(r'(\d+)',i).group())):
-                #     frame = cv2.imread(os.path.join(current_pwd + "testFigures_keyboard",path) , cv2.IMREAD_COLOR)
-                #     # import pdb;pdb.set_trace()
-                #     frm = np.array(cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY))
-                #     if len(bgr[0])!=len(frm[0]):
-                #         continue
-                #     res_black = moveTowards_filter(bgr,frm, 30)
-                #     res_white = moveTowards_filter(bgr,frm, 50)
-                #     white = np.clip(bgr.astype(np.int16)-res_white.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
-                #     white = cv2.resize(white, (640, 64))
-                #     os.makedirs(current_pwd + 'white', exist_ok=True)
-                #     cv2.imwrite(current_pwd + 'white\\' + path, white)
-                #     black = np.clip(res_black.astype(np.int16)-bgr.astype(np.int16),a_min=0,a_max=1).astype(np.uint8)*255
-                #     black = cv2.resize(black, (640, 64))
-                #     os.makedirs(current_pwd + 'black', exist_ok=True)
-                #     cv2.imwrite(current_pwd + 'black\\' + path, black)
-                #     mix = np.concatenate((black, white), axis=0)
-                #     os.makedirs(current_pwd + 'mix', exist_ok=True)
-                #     cv2.imwrite(current_pwd + 'mix\\' + path, mix)                    
+                continue             
                 
         return sorted(zip(flacs, tsvs, image_paths))   

@@ -4,7 +4,7 @@ from tkinter.tix import Tree
 import numpy as np
 import cv2
 import json
-from utils import savefig_keyboard
+from img_utils import savefig_keyboard
 from captureFigures import capture_figures
 # from rgb2gray import rgb2gray
 from RotateFigures import rotate_figure
@@ -14,7 +14,7 @@ from key_detection import key_detection, get_keys_visual
 from backgroundFilter import moveTowards_filter
 from get_key import get_key
 
-def get_background():
+def get_background(current_pwd):
     overwrite = True
     readfile = False
     
@@ -24,9 +24,9 @@ def get_background():
     bgr_mask = None
     count = 0
     if not readfile:
-        for path in sorted(os.listdir("./testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())):            
+        for path in sorted(os.listdir(current_pwd + "testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())):            
             # fig_gray = rgb2gray(path)
-            figurePath = os.path.join("./testFigures",path)
+            figurePath = os.path.join(current_pwd + "testFigures",path)
             figure = cv2.imread(figurePath)
             # rotate_figure(fig_gray)
             # import pdb;pdb.set_trace()
@@ -51,23 +51,23 @@ def get_background():
 
         print(bgr_path,max_brighness)
         
-        for path in sorted(os.listdir("./testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())): 
-            figurePath = os.path.join("./testFigures",path)
+        for path in sorted(os.listdir(current_pwd + "testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())): 
+            figurePath = os.path.join(current_pwd + "testFigures",path)
             figure = cv2.imread(figurePath)
             keyboard = crop_fig_bkr(figure, bgr_mask)
             if keyboard.shape[0]==0 or keyboard.shape[1]==0:
                 continue
-            savefig_keyboard(path,keyboard,overwrite)
-        with open('./data.json', 'w') as f:
+            savefig_keyboard(current_pwd, path,keyboard,overwrite)
+        with open(current_pwd + 'data.json', 'w') as f:
             data={}
             data["bgr_path"]=bgr_path
             json.dump(data,f)
     else:
-        with open('./data.json') as f:
+        with open(current_pwd + 'data.json') as f:
             data = json.load(f)
         # print("read {}".format(path))
         bgr_path = data["bgr_path"]
-        bkg_img = cv2.imread(os.path.join("./testFigures_keyboard",bgr_path))
+        bkg_img = cv2.imread(os.path.join(current_pwd + "testFigures_keyboard",bgr_path))
     return bkg_img
 
 def keyboard_segmentation(bkg_img):
