@@ -26,15 +26,15 @@ ex = Experiment('train_transcriber')
 
 @ex.config
 def config():
-    logdir = 'runs/transcriber-' + datetime.now().strftime('%y%m%d-%H%M%S')
+    logdir = 'runs/transcriber-220630-225126' # 'runs/transcriber-' + datetime.now().strftime('%y%m%d-%H%M%S')
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    iterations = 5
-    resume_iteration = None
-    checkpoint_interval = 1
+    iterations = 20000
+    resume_iteration = 16000
+    checkpoint_interval = 2000
     train_on = 'Sight to Sound'
 
-    batch_size = 5      #8
-    sequence_length = SEQUENCE_LENGTH
+    batch_size = 1      #8
+    sequence_length = 327680 // 8
     model_complexity = 48
 
     # if torch.cuda.is_available() and torch.cuda.get_device_properties(torch.cuda.current_device()).total_memory < 10e9:
@@ -48,17 +48,17 @@ def config():
 
     leave_one_out = None
 
-    clip_gradient_norm = 3
+    clip_gradient_norm = None # 3
 
     validation_length = sequence_length
-    validation_interval = 500
+    validation_interval = 2000
 
-    K = 5 # K折交叉验证
+    cross_validation = 5 # K折交叉验证
 
     ex.observers.append(FileStorageObserver.create(logdir))
 
 
-def get_kfold_data(k, i, X):  
+def get_kfold_data(X, k, i=0):  
      
     # 返回第 i+1 折 (i = 0 -> k-1) 交叉验证时所需要的训练和验证数据，X_train为训练集，X_valid为验证集
     fold_size = len(X) // k  # 每份的个数:数据总条数/折数（组数）
@@ -78,7 +78,7 @@ def get_kfold_data(k, i, X):
 @ex.automain
 def train(logdir, device, iterations, resume_iteration, checkpoint_interval, train_on, batch_size, sequence_length,
           model_complexity, learning_rate, learning_rate_decay_steps, learning_rate_decay_rate, leave_one_out,
-          clip_gradient_norm, validation_length, validation_interval, K):
+          clip_gradient_norm, validation_length, validation_interval, cross_validation):
     print_config(ex.current_run)
     os.makedirs(logdir, exist_ok=True)
     writer = SummaryWriter(logdir)
@@ -87,56 +87,65 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
 
     data_path = glob(os.path.join('mixModel/data/SIGHT', 'video', 'video_*.mp4'))
 
-    for e in range(K):
-        print("*"*25,"第", e + 1,"折","*"*25)
-        train_path, validation_path = get_kfold_data(K, e, data_path)
-        train_set = SIGHT(sequence_length=sequence_length, groups=['train'], data_path=train_path)
-        loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
-        validation_dataset = SIGHT(sequence_length=sequence_length, groups=['validation'], data_path=validation_path)
-        # create network and optimizer
-        if resume_iteration is None:
-            model = Net().to(device)
-            optimizer = torch.optim.Adam(model.parameters(), learning_rate)
-            resume_iteration = 0
-        else:
-            model_path = os.path.join(logdir, f'model-{resume_iteration}.pt')
-            model = torch.load(model_path)
-            optimizer = torch.optim.Adam(model.parameters(), learning_rate)
-            optimizer.load_state_dict(torch.load(os.path.join(logdir, 'last-optimizer-state.pt')))
-        
-        scheduler = StepLR(optimizer, step_size=learning_rate_decay_steps, gamma=learning_rate_decay_rate)
-
-
-        loop = tqdm(range(resume_iteration + 1, iterations + 1))   
-        for i, batch in zip(loop, cycle(loader)):
-            predictions, losses = model.run_on_batch(batch)
-            loss = sum(losses.values())
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            scheduler.step()
-
-            if clip_gradient_norm:
-                clip_grad_norm_(model.parameters(), clip_gradient_norm)
-                
-            for key, value in {'loss': loss, **losses}.items():
-                writer.add_scalar(key, value.item(), global_step=i)
-                
-            if i % validation_interval == 0:
-                model.eval()
-                with torch.no_grad():
-                    for key, value in evaluate(validation_dataset, model).items():
-                        writer.add_scalar('validation/' + key.replace(' ', '_'), np.mean(value), global_step=i)
-                model.train()
-                
-            if i % checkpoint_interval == 0:
-                torch.save(model, os.path.join(logdir, f'model-{i}.pt'))
-                torch.save(optimizer.state_dict(), os.path.join(logdir, 'last-optimizer-state.pt'))
-"""
-    train_set = SIGHT(sequence_length=sequence_length)
-    loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
-    validation_dataset = None
     
+    
+    # for e in range(cross_validation):
+    #     print("*"*25,"第", e + 1,"折","*"*25)
+    #     train_path, validation_path = get_kfold_data(data_path, cross_validation, e)
+    #     train_set = SIGHT(sequence_length=sequence_length, groups=['train'], data_path=train_path)
+    #     loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
+    #     validation_dataset = SIGHT(sequence_length=sequence_length, groups=['validation'], data_path=validation_path)
+    #     loader_eval = DataLoader(validation_dataset, 1, shuffle=True, drop_last=True)
+
+    #     # create network and optimizer
+    #     if resume_iteration is None:
+    #         model = Net().to(device)
+    #         optimizer = torch.optim.Adam(model.parameters(), learning_rate)
+    #         resume_iteration = 0
+    #     else:
+    #         model_path = os.path.join(logdir, f'model-{resume_iteration}.pt')
+    #         model = torch.load(model_path)
+    #         optimizer = torch.optim.Adam(model.parameters(), learning_rate)
+    #         optimizer.load_state_dict(torch.load(os.path.join(logdir, 'last-optimizer-state.pt')))
+        
+    #     scheduler = StepLR(optimizer, step_size=learning_rate_decay_steps, gamma=learning_rate_decay_rate)
+        
+    #     loop = tqdm(range(resume_iteration + 1, iterations + 1))   
+    #     for i, batch in zip(loop, cycle(loader)):
+    #         predictions, losses = model.run_on_batch(batch)
+    #         loss = sum(losses.values())
+    #         optimizer.zero_grad()
+    #         loss.backward()
+    #         optimizer.step()
+    #         scheduler.step()
+
+    #         if clip_gradient_norm:
+    #             clip_grad_norm_(model.parameters(), clip_gradient_norm)
+                
+    #         for key, value in {'loss': loss, **losses}.items():
+    #             writer.add_scalar(key, value.item(), global_step=i)
+                
+    #         if i % validation_interval == 0:
+    #             model.eval()
+    #             with torch.no_grad():
+    #                 for key, value in evaluate(loader_eval, model,save_path=logdir).items():
+    #                     writer.add_scalar('validation/' + key.replace(' ', '_'), np.mean(value), global_step=i)
+    #             model.train()
+                
+    #         if i % checkpoint_interval == 0:
+    #             torch.save(model, os.path.join(logdir, f'model-{i}.pt'))
+    #             torch.save(optimizer.state_dict(), os.path.join(logdir, 'last-optimizer-state.pt'))
+
+    # train_set = SIGHT(sequence_length=sequence_length)
+    # loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
+    # validation_dataset = None
+    
+    
+    train_path, validation_path = get_kfold_data(data_path, cross_validation)
+    train_set = SIGHT(sequence_length=sequence_length, groups=['train'], data_path=train_path)
+    loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
+    validation_dataset = SIGHT(sequence_length=sequence_length, groups=['validation'],data_path=validation_path)
+    loader_eval = DataLoader(validation_dataset, 1, shuffle=True, drop_last=True)
     
     # create network and optimizer
     if resume_iteration is None:
@@ -150,10 +159,10 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
         optimizer.load_state_dict(torch.load(os.path.join(logdir, 'last-optimizer-state.pt')))
     
     scheduler = StepLR(optimizer, step_size=learning_rate_decay_steps, gamma=learning_rate_decay_rate)
-
-
-    loop = tqdm(range(resume_iteration + 1, iterations + 1))
-    for i, batch in zip(loop, cycle(loader)):
+    
+    # loop = tqdm(range(resume_iteration + 1, iterations + 1))   
+    # for i, batch in zip(loop, cycle(loader)):
+    for i, batch in enumerate(loader):
         predictions, losses = model.run_on_batch(batch)
         loss = sum(losses.values())
         optimizer.zero_grad()
@@ -170,11 +179,10 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
         if i % validation_interval == 0:
             model.eval()
             with torch.no_grad():
-                for key, value in evaluate(validation_dataset, model).items():
+                for key, value in evaluate(loader_eval, model,save_path=os.path.join(logdir,)).items():
                     writer.add_scalar('validation/' + key.replace(' ', '_'), np.mean(value), global_step=i)
             model.train()
             
         if i % checkpoint_interval == 0:
             torch.save(model, os.path.join(logdir, f'model-{i}.pt'))
             torch.save(optimizer.state_dict(), os.path.join(logdir, 'last-optimizer-state.pt'))
-"""

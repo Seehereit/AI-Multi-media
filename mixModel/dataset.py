@@ -51,7 +51,7 @@ class PianoRollAudioDataset(Dataset):
             # batch * 640 * 128 * 640             
             image_path = data["image_path"]
             print("current image path is {}".format(image_path))
-            mix_list = []
+            result['image'] = []
             for i in range(data["audio_begin"], data["audio_end"], HOP_LENGTH):     #640张图
                 cur_num = i * FPS // SAMPLE_RATE 
                 for e in range(0, 2):       #如果一张图找不到，至多找2次
@@ -64,9 +64,9 @@ class PianoRollAudioDataset(Dataset):
                         print("image %d not exist, replaced with full zero" % cur_num)
                         mix = np.zeros((64, 320), dtype=np.uint8)
                 #mix = torch.ShortTensor(mix.reshape((1, 128, 640))).to(self.device)
-                mix_list.append(mix.reshape((1, 64, 320))) 
-            image = torch.Tensor(np.concatenate(mix_list, axis=0)).to(self.device)
-            result['image'] = image
+                result['image'].append(mix.reshape((1, 64, 320))) 
+            result['image'] = torch.cat(result['image'], dim=0).to(self.device)
+            
             #512张图
             # for i in range(image_begin, image_end + 1):
 

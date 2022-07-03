@@ -16,14 +16,27 @@ class Net(nn.Module):
         self.res_inception2d = res_inception2d(1,88)
         self.onset_and_frames = onset_and_frames(741,88)
     
-    def forward(self, x, mel): # (640, 229)
+    def run_res_inc(self, x):
         pic_data = []
         x = torch.unsqueeze(x,2)
         for i in range(x.shape[1]):
             pic_data.append(self.res_inception2d(x[:,i,:,:])[1].unsqueeze(0))
-        pic_data = torch.cat(pic_data,dim=0).permute(1,0,2)
-        data_concat = torch.cat((mel,pic_data),2)
-        onset_pred, offset_pred, _, frame_pred, velocity_pred = self.onset_and_frames(data_concat)
+        return torch.cat(pic_data,dim=0).permute(1,0,2)
+    
+    def forward(self, x, mel): # (640, 229)
+        
+        x = torch.cat((mel,self.run_res_inc(x)),2)
+        try:
+            # print("1:{}".format(torch.cuda.memory_allocated(0)))
+            onset_pred, offset_pred, _, frame_pred, velocity_pred = self.onset_and_frames(x)
+            # print("2:{}".format(torch.cuda.memory_allocated(0)))
+        except RuntimeError as exception:
+            if "out of memory" in str(exception):
+                print("WARNING: out of memory")
+                if hasattr(torch.cuda, 'empty_cache'):
+                    torch.cuda.empty_cache()
+                else:
+                    raise exception
         return onset_pred, offset_pred, frame_pred, velocity_pred
     
     def run_on_batch(self, batch):
