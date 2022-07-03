@@ -19,7 +19,6 @@ eps = sys.float_info.epsilon
 
 def evaluate(data, model, onset_threshold=0.5, frame_threshold=0.5, save_path=None):
     metrics = defaultdict(list)
-
     for label in data:
         pred, losses = model.run_on_batch(label)
         for key, loss in losses.items():
@@ -89,7 +88,8 @@ def evaluate(data, model, onset_threshold=0.5, frame_threshold=0.5, save_path=No
             save_pianoroll(pred_path, pred['onset'], pred['frame'])
             # midi_path = os.path.join(save_path, os.path.basename(label['path']) + '.pred.mid')
             # save_midi(midi_path, p_est, i_est, v_est)
-            print("\n {}".format(pred['onset'].max()))
+            print("\n {}:{}".format(pred['onset'].max()))
+            
     return metrics
 
 

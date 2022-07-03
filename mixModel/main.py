@@ -28,8 +28,8 @@ ex = Experiment('train_transcriber')
 def config():
     logdir = 'runs/transcriber-220630-225126' # 'runs/transcriber-' + datetime.now().strftime('%y%m%d-%H%M%S')
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    iterations = 20000
-    resume_iteration = 16000
+    iterations = 20
+    resume_iteration = None
     checkpoint_interval = 2000
     train_on = 'Sight to Sound'
 
@@ -146,7 +146,7 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
     loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
     validation_dataset = SIGHT(sequence_length=sequence_length, groups=['validation'],data_path=validation_path)
     loader_eval = DataLoader(validation_dataset, 1, shuffle=True, drop_last=True)
-    
+
     # create network and optimizer
     if resume_iteration is None:
         model = Net().to(device)
@@ -162,7 +162,9 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
     
     # loop = tqdm(range(resume_iteration + 1, iterations + 1))   
     # for i, batch in zip(loop, cycle(loader)):
-    for i, batch in enumerate(loader):
+    for i, batch in tqdm(enumerate(loader)):
+        if i < resume_iteration:
+            continue
         predictions, losses = model.run_on_batch(batch)
         loss = sum(losses.values())
         optimizer.zero_grad()
@@ -176,7 +178,7 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
         for key, value in {'loss': loss, **losses}.items():
             writer.add_scalar(key, value.item(), global_step=i)
             
-        if i % validation_interval == 0:
+        if (i+1) % validation_interval == 0:
             model.eval()
             with torch.no_grad():
                 for key, value in evaluate(loader_eval, model,save_path=os.path.join(logdir,)).items():

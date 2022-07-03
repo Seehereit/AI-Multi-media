@@ -20,11 +20,10 @@ class Net(nn.Module):
         pic_data = []
         x = torch.unsqueeze(x,2)
         for i in range(x.shape[1]):
-            pic_data.append(self.res_inception2d(x[:,i,:,:])[1].unsqueeze(0))
+            pic_data.append(self.res_inception2d(x[:,i,:,:]).unsqueeze(0))
         return torch.cat(pic_data,dim=0).permute(1,0,2)
     
     def forward(self, x, mel): # (640, 229)
-        
         x = torch.cat((mel,self.run_res_inc(x)),2)
         try:
             # print("1:{}".format(torch.cuda.memory_allocated(0)))

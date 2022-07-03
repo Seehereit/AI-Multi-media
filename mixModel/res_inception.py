@@ -261,12 +261,13 @@ class res_inception2d(nn.Module):
         x = self.inception9(x)
                
         x = self.averagepool_2441(x) # [256, 1, 5]
-        y = torch.flatten(x, 1)
+        # y = torch.flatten(x, 1)
         x = torch.flatten(x, 1) # [10240]
-        x = self.linear(x) # [88]
-        x = nn.Sigmoid()(x)
-        return x,y   
-    
+        # x = self.linear(x) # [88]
+        # x = nn.Sigmoid()(x)
+        # return x,y   
+        return x  
+
 
 
 # device = 'cuda' if torch.cuda.is_available() else 'cpu'

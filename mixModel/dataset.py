@@ -50,7 +50,7 @@ class PianoRollAudioDataset(Dataset):
             #黑键 白键图 上下叠在一起 每张图64*640
             # batch * 640 * 128 * 640             
             image_path = data["image_path"]
-            print("current image path is {}".format(image_path))
+            # print("current image path is {}".format(image_path))
             result['image'] = []
             for i in range(data["audio_begin"], data["audio_end"], HOP_LENGTH):     #640张图
                 cur_num = i * FPS // SAMPLE_RATE 
@@ -58,11 +58,11 @@ class PianoRollAudioDataset(Dataset):
                     mix_name = "{}\\mix\\{:>03d}.bmp".format(image_path, cur_num + e)
                     if os.path.exists(mix_name):
                         mix = cv2.imread(mix_name, cv2.IMREAD_GRAYSCALE)
-                        mix = cv2.resize(mix, (320, 64))
+                        mix = torch.tensor(cv2.resize(mix, (320, 64))).float()
                         break
                     elif e == 1:
-                        print("image %d not exist, replaced with full zero" % cur_num)
-                        mix = np.zeros((64, 320), dtype=np.uint8)
+                        # print("image %d not exist, replaced with full zero" % cur_num)
+                        mix = torch.zeros((64, 320)).float()
                 #mix = torch.ShortTensor(mix.reshape((1, 128, 640))).to(self.device)
                 result['image'].append(mix.reshape((1, 64, 320))) 
             result['image'] = torch.cat(result['image'], dim=0).to(self.device)
@@ -100,7 +100,7 @@ class PianoRollAudioDataset(Dataset):
         result['offset'] = (result['label'] == 1).float()
         result['frame'] = (result['label'] > 1).float()
         result['velocity'] = result['velocity'].float().div_(128.0)
-
+        result['image'] = result['image'].div_(255.0)
         return result
 
     def __len__(self):
