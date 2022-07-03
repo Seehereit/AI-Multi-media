@@ -9,7 +9,8 @@ import json
 import sys
 sys.path.append("..")
 sys.path.append(os.getcwd())
-from mixModel.constants import FPS, SAMPLE_RATE, SEQUENCE_LENGTH
+from mixModel.constants import FPS, SAMPLE_RATE, SEQUENCE_LENGTH, SAMPLE_INTERVAL
+
 
 videos = glob(os.path.join('mixModel/data/SIGHT', 'video', 'video_*.mp4'))
 image_paths = [v.replace('\\video\\', '\\image\\').replace('.mp4', '') for v in videos]
@@ -76,15 +77,16 @@ for image_path in image_paths:
 #第一个数据点是第一张图片，每一个数据点是在前面基础加sequence_length // 2 ，audio全零并且结束位置在audio总长度的后十分之一
     if not os.path.exists(current_pwd + 'dataset_config.json'):
         print("检测到dataset_config.json文件缺失")
+    if True:
         dataset_config = {}
-        path = sorted(os.listdir(current_pwd + "testFigures_keyboard"),key = lambda i:int(re.match(r'(\d+)',i).group()))[0]
+        path = sorted(os.listdir(current_pwd + "mix"),key = lambda i:int(re.match(r'(\d+)',i).group()))[0]
         image_begin = int(path.split('.')[0])
-        image_end = sorted(os.listdir(current_pwd + "testFigures_keyboard"),key = lambda i:int(re.match(r'(\d+)',i).group()))[-1]
+        image_end = sorted(os.listdir(current_pwd + "mix"),key = lambda i:int(re.match(r'(\d+)',i).group()))[-1]
         audio_end = int(image_end.split('.')[0]) * SAMPLE_RATE // FPS
         audio_begin = image_begin * SAMPLE_RATE // FPS
         audio = soundfile.read(current_pwd.replace("\\image\\", "\\flac\\")[0:-1] + ".flac", dtype='int16')[0]
         dict_num = 0
-        for cur_num in range(audio_begin, len(audio), SEQUENCE_LENGTH // 2):
+        for cur_num in range(audio_begin, len(audio), SAMPLE_INTERVAL):
             #if audio[cur_num] == 0 and cur_num >= len(audio) * 9 // 10:     # 用最后一张图片作为终止条件会不会好一点？
             if cur_num + SEQUENCE_LENGTH >= audio_end:
                 break
