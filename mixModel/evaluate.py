@@ -22,13 +22,16 @@ def evaluate(data, model, onset_threshold=0.5, frame_threshold=0.5, save_path=No
 
     for label in data:
         pred, losses = model.run_on_batch(label)
-
         for key, loss in losses.items():
             metrics[key].append(loss.item())
 
         for key, value in pred.items():
             value.squeeze_(0).relu_()
 
+        label['onset'].squeeze_(0)
+        label['frame'].squeeze_(0)
+        label['velocity'].squeeze_(0)
+        label['path'] = label['path'][0]
         p_ref, i_ref, v_ref = extract_notes(label['onset'], label['frame'], label['velocity'])
         p_est, i_est, v_est = extract_notes(pred['onset'], pred['frame'], pred['velocity'], onset_threshold, frame_threshold)
 
@@ -84,9 +87,9 @@ def evaluate(data, model, onset_threshold=0.5, frame_threshold=0.5, save_path=No
             save_pianoroll(label_path, label['onset'], label['frame'])
             pred_path = os.path.join(save_path, os.path.basename(label['path']) + '.pred.png')
             save_pianoroll(pred_path, pred['onset'], pred['frame'])
-            midi_path = os.path.join(save_path, os.path.basename(label['path']) + '.pred.mid')
-            save_midi(midi_path, p_est, i_est, v_est)
-
+            # midi_path = os.path.join(save_path, os.path.basename(label['path']) + '.pred.mid')
+            # save_midi(midi_path, p_est, i_est, v_est)
+            print("\n {}".format(pred['onset'].max()))
     return metrics
 
 
