@@ -49,7 +49,7 @@ def get_background(current_pwd):
                 break
 
 
-        print(bgr_path,max_brighness)
+        # print(bgr_path,max_brighness)
         
         for path in sorted(os.listdir(current_pwd + "testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())): 
             figurePath = os.path.join(current_pwd + "testFigures",path)
