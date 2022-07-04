@@ -112,7 +112,7 @@ def crop_fig_bkr(image,mask):
     return masked
     
 
-def crop_fig(image):
+def crop_fig(image,path):
     image = image[round(image.shape[0]/2):,:]
     img = cv2.GaussianBlur(image,(3,3),0)
     result = image.copy()
@@ -160,7 +160,7 @@ def crop_fig(image):
     result, crop_mask = img_paste(result,sort_points_clockwise([p1,p2,p4,p3]))
     result = result.copy()
     (h, w) = result.shape[:2]
-
+    
     edges = cv2.Canny(result, 50, 150, apertureSize = 3)
     
     houghLine = cv2.HoughLinesP(edges,1,np.pi/180,118)
@@ -230,16 +230,19 @@ def crop_fig(image):
     
     pp1, pp2 = Extend_line(p3,p4,w,h,1)
     crop_result,crop_mask2 = img_paste(result,sort_points_clockwise([[0,h],[w,h],pp1,pp2]))
+
     # cv2.imshow("result_img", crop_result)
     # cv2.waitKey(0)
     
     upper = 0
     while upper<crop_mask.shape[0] and crop_mask[upper].sum()==0:
         upper = upper + 1
-    crop_mask[upper:upper+crop_mask2.shape[0],:]=crop_mask2
-        
-    # cv2.imshow("result_img", result)
-    # cv2.waitKey(0)
+    left = 0
+    while left<crop_mask.shape[1] and crop_mask[:,left].sum()==0:
+        left = left + 1
+
+
+    crop_mask[upper:upper+crop_mask2.shape[0],left:left+crop_mask2.shape[1]]=crop_mask2
 
     # import pdb;pdb.set_trace()
 
