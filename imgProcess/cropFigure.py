@@ -112,7 +112,7 @@ def crop_fig_bkr(image,mask):
     return masked
     
 
-def crop_fig(image,path):
+def crop_fig(image):
     image = image[round(image.shape[0]/2):,:]
     img = cv2.GaussianBlur(image,(3,3),0)
     result = image.copy()
