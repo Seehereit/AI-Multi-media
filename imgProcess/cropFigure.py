@@ -66,7 +66,7 @@ def img_paste(image, polygon_list):
     #cv2中的图片是按照bgr顺序生成的，我们需要按照rgb格式生成
     # fig = cv2.split(masked)
     masked = masked[[not np.all(masked[i] == 0) for i in range(masked.shape[0])], :]
-    masked = masked[:, [not np.all(masked[:, i] == 0) for i in range(masked.shape[1])]]
+    # masked = masked[:, [not np.all(masked[:, i] == 0) for i in range(masked.shape[1])]]
     # cv2.imshow("mask",mask)
     # cv2.waitKey(0)
     # masked = cv2.merge([r, g, b])
@@ -135,7 +135,6 @@ def crop_fig(image,path):
             mask[x,:]=0
 
     houghLine = houghLine[mask.astype(bool)].reshape(-1,4)
-    # import pdb;pdb.set_trace()    
     lines = sorted(houghLine, key=cmp_to_key(lambda a, b: cmp_dist(a,b)))  #这里对最后一个参数使用了经验型的值
     if (len(houghLine)<2):
         return [],[],[]
@@ -190,7 +189,6 @@ def crop_fig(image,path):
     
 
     lines_crop = np.array(sorted(lines_crop, key=cmp_to_key(lambda a, b: cmp_dist2(a,b))))
-    # import pdb;pdb.set_trace()
     if len(lines_crop)<2 or (np.array(lines_crop[:,(1,3)])).std()<=1:
         return [],[],[]
     kmeans = KMeans(n_clusters=2, random_state=0).fit(lines_crop[:,(1,3)])
@@ -226,7 +224,6 @@ def crop_fig(image,path):
     # p4 = [w,round((w*k2+b2)*1.2)]
     
     # p1,p2=Extend_line(p1,p2,h,w,1)
-    # import pdb;pdb.set_trace()
     
     pp1, pp2 = Extend_line(p3,p4,w,h,1)
     crop_result,crop_mask2 = img_paste(result,sort_points_clockwise([[0,h],[w,h],pp1,pp2]))
@@ -241,10 +238,8 @@ def crop_fig(image,path):
     while left<crop_mask.shape[1] and crop_mask[:,left].sum()==0:
         left = left + 1
 
-
     crop_mask[upper:upper+crop_mask2.shape[0],left:left+crop_mask2.shape[1]]=crop_mask2
 
-    # import pdb;pdb.set_trace()
 
 
     # p1 = [0,round(b1)]
@@ -334,5 +329,4 @@ if __name__ == '__main__':
     # from key_detection import blackkeys_detection
     # print(brightness(whitekey))
     # blackkey = blackkeys_detection(crop_result)
-    # pdb.set_trace()
 
