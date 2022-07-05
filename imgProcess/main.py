@@ -4,7 +4,7 @@ from tkinter.tix import Tree
 import numpy as np
 import cv2
 import json
-from img_utils import savefig_keyboard
+from img_utils import savefig_keyboard,savefig_keyboard_hand
 from captureFigures import capture_figures
 # from rgb2gray import rgb2gray
 from RotateFigures import rotate_figure
@@ -13,7 +13,7 @@ from mostBrightness import brightness
 from key_detection import key_detection, get_keys_visual
 from backgroundFilter import moveTowards_filter
 from get_key import get_key
-
+from drawRect import hand_crop
 def get_background(current_pwd):
     overwrite = True
     readfile = False
@@ -24,29 +24,17 @@ def get_background(current_pwd):
     bgr_mask = None
     count = 0
     if not readfile:
-        for path in sorted(os.listdir(current_pwd + "testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())):            
-            # fig_gray = rgb2gray(path)
-            figurePath = os.path.join(current_pwd + "testFigures",path)
-            figure = cv2.imread(figurePath)
-            # rotate_figure(fig_gray)
-            # import pdb;pdb.set_trace()
-            fig_keyboard,whitekey,mask = crop_fig(figure)
-            if len(fig_keyboard)==0 or len(whitekey)==0:
-               continue
-           
-            # import pdb;pdb.set_trace()
-            count = count + 1
-            b = brightness(whitekey)
-            # cv2.imshow("result_img",whitekey)
-            # cv2.waitKey(0)
-            print(b,path)
-            if b > max_brighness:
-               max_brighness = b
-               bkg_img = fig_keyboard
-               bgr_path = path
-               bgr_mask = mask
-            if count>300:
-                break
+        # for path in sorted(os.listdir(current_pwd + "testFigures"),key = lambda i:int(re.match(r'(\d+)',i).group())):            
+        #     # fig_gray = rgb2gray(path)
+        #     figurePath = os.path.join(current_pwd + "testFigures",path)
+        #     figure = cv2.imread(figurePath)
+        #     # rotate_figure(fig_gray)
+
+        #     fig_keyboard,whitekey,mask = crop_fig(figure, path)
+        #     if len(fig_keyboard)==0 or len(whitekey)==0:
+        #        continue
+        bgr_mask = hand_crop(current_pwd)
+            
 
 
         # print(bgr_path,max_brighness)
@@ -57,7 +45,15 @@ def get_background(current_pwd):
             keyboard = crop_fig_bkr(figure, bgr_mask)
             if keyboard.shape[0]==0 or keyboard.shape[1]==0:
                 continue
-            savefig_keyboard(current_pwd, path,keyboard,overwrite)
+            savefig_keyboard_hand(current_pwd, path,keyboard,overwrite)
+
+            b = brightness(keyboard)
+            print(b,path)
+
+            if b > max_brighness:
+               max_brighness = b
+               bkg_img = keyboard
+               bgr_path = path
         with open(current_pwd + 'data.json', 'w') as f:
             data={}
             data["bgr_path"]=bgr_path

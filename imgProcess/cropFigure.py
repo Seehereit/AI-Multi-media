@@ -103,7 +103,7 @@ def Extend_line(p1,p2, x, y, flag):
             return ([x3, y3], [x4, y4])
 
 def crop_fig_bkr(image,mask):
-    image = image[round(image.shape[0]/2):,:]
+    # image = image[round(image.shape[0]/2):,:]
     masked = cv2.bitwise_and(image, image, mask=mask)
     #cv2中的图片是按照bgr顺序生成的，我们需要按照rgb格式生成
     # fig = cv2.split(masked)
