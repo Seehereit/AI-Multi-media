@@ -149,7 +149,7 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
     import pdb;pdb.set_trace()
     # create network and optimizer
     if resume_iteration is None:
-        model = Net().to(device)
+        model = Net()
         optimizer = torch.optim.Adam(model.parameters(), learning_rate)
         resume_iteration = 0
     else:
@@ -159,6 +159,14 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
         optimizer.load_state_dict(torch.load(os.path.join(logdir, 'last-optimizer-state.pt')))
     
     scheduler = StepLR(optimizer, step_size=learning_rate_decay_steps, gamma=learning_rate_decay_rate)
+    
+    
+    if torch.cuda.device_count() > 1:
+        print("Let's use", torch.cuda.device_count(), "GPUs!")
+        # dim = 0 [30, xxx] -> [10, ...], [10, ...], [10, ...] on 3 GPUs
+        model = nn.DataParallel(model)
+    
+    model.to(device)
     
     # loop = tqdm(range(resume_iteration + 1, iterations + 1))   
     # for i, batch in zip(loop, cycle(loader)):
