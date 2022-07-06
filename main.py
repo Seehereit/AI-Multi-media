@@ -140,7 +140,7 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
     # validation_dataset = None
     
     
-    train_path, validation_path = get_kfold_data(data_path, cross_validation)
+    train_path, validation_path = data_path[0:-2], data_path[-2:] #get_kfold_data(data_path, cross_validation)
     train_set = SIGHT(sequence_length=sequence_length, groups=['train'], data_path=train_path)
     loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
     validation_dataset = SIGHT(sequence_length=sequence_length, groups=['validation'],data_path=validation_path)
