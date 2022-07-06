@@ -17,9 +17,8 @@ from tqdm import tqdm
 from glob import glob
 
 
-from __init__ import *
-from evaluate import evaluate
-from model_mix import Net
+from mixModel.__init__ import *
+from mixModel.evaluate import evaluate
 
 ex = Experiment('train_transcriber')
 
@@ -146,7 +145,6 @@ def train(logdir, device, iterations, resume_iteration, checkpoint_interval, tra
     loader = DataLoader(train_set, batch_size, shuffle=True, drop_last=True)
     validation_dataset = SIGHT(sequence_length=sequence_length, groups=['validation'],data_path=validation_path)
     loader_eval = DataLoader(validation_dataset, 1, shuffle=True, drop_last=True)
-    import pdb;pdb.set_trace()
     # create network and optimizer
     if resume_iteration is None:
         model = Net()
