@@ -11,6 +11,7 @@ from tqdm import tqdm
 from constants import *
 from midi import parse_midi
 import cv2
+import re
 
 
 class PianoRollAudioDataset(Dataset):
@@ -33,6 +34,7 @@ class PianoRollAudioDataset(Dataset):
                     cur_data = {}
                     cur_data["path"] = data_dict["path"]
                     cur_data["audio"] = data_dict["audio"][dataset_config[e]["audio_begin"]:dataset_config[e]["audio_end"]]
+                    assert len(cur_data["audio"]) == SEQUENCE_LENGTH
                     cur_data["label"] = data_dict["label"][(dataset_config[e]["audio_begin"]//HOP_LENGTH):(dataset_config[e]["audio_end"]//HOP_LENGTH), :]
                     cur_data["velocity"] = data_dict["velocity"][(dataset_config[e]["audio_begin"]//HOP_LENGTH):(dataset_config[e]["audio_end"]//HOP_LENGTH), :]
                     cur_data["image_path"] = data_dict["image_path"]
@@ -53,7 +55,9 @@ class PianoRollAudioDataset(Dataset):
             # print("current image path is {}".format(image_path))
             result['image'] = []
             for i in range(data["audio_begin"], data["audio_end"], HOP_LENGTH):     #640张图
-                cur_num = i * FPS // SAMPLE_RATE 
+                with open(image_path + "fps.json", "r") as f:
+                    fps = json.load(f)
+                cur_num = i * fps // SAMPLE_RATE 
                 for e in range(0, 2):       #如果一张图找不到，至多找2次
                     mix_name = "{}\\mix\\{:>03d}.bmp".format(image_path, cur_num + e)
                     if os.path.exists(mix_name):
@@ -250,7 +254,33 @@ class SIGHT(PianoRollAudioDataset):
         assert(all(os.path.isfile(tsv) for tsv in tsvs))
         assert(all(os.path.isfile(video) for video in videos))
         for image_path in image_paths:
-            if os.path.exists(image_path):      #如果文件夹存在则视为已经图像处理完成，所以别动文件夹里的文件
-                continue             
+            dataset_config = {}
+            current_pwd = image_path + "\\"
+            path = sorted(os.listdir(current_pwd + "mix"),key = lambda i:int(re.match(r'(\d+)',i).group()))[0]
+            image_begin = int(path.split('.')[0])
+            image_end = sorted(os.listdir(current_pwd + "mix"),key = lambda i:int(re.match(r'(\d+)',i).group()))[-1]
+            videoCapture = cv2.VideoCapture(current_pwd.replace("\\image\\", "\\video\\")[0:-1] + ".mp4")	# 读取视频文件
+            fps = videoCapture.get(cv2.CAP_PROP_FPS)	# 计算视频的帧率
+            with open(current_pwd + 'fps.json', 'w') as f:
+                data = {}
+                data["fps"] = int(fps)
+                json.dump(data, f)
+            audio_end =  int(image_end.split('.')[0]) * SAMPLE_RATE // fps 
+            audio_begin = int(image_begin * SAMPLE_RATE // fps)
+            audio = soundfile.read(current_pwd.replace("\\image\\", "\\flac\\")[0:-1] + ".flac", dtype='int16')[0]
+            dict_num = 0
+            for cur_num in range(audio_begin, len(audio), SAMPLE_INTERVAL):
+                #if audio[cur_num] == 0 and cur_num >= len(audio) * 9 // 10:     # 用最后一张图片作为终止条件会不会好一点？
+                if cur_num + SEQUENCE_LENGTH >= audio_end:
+                    break
+                sampling = {}
+                sampling["audio_begin"] = cur_num
+                sampling["audio_end"] = cur_num + SEQUENCE_LENGTH
+                #sampling["image_begin"] = cur_num * FPS // SAMPLE_RATE
+                #sampling["image_end"] = sampling['audio_end'] * FPS // SAMPLE_RATE
+                dataset_config[dict_num] = sampling
+                dict_num += 1
+            with open(current_pwd + 'dataset_config.json', 'w') as f:
+                json.dump(dataset_config, f)         
                 
         return sorted(zip(flacs, tsvs, image_paths))   
