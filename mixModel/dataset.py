@@ -55,9 +55,9 @@ class PianoRollAudioDataset(Dataset):
             # print("current image path is {}".format(image_path))
             result['image'] = []
             for i in range(data["audio_begin"], data["audio_end"], HOP_LENGTH):     #640张图
-                with open(image_path + "fps.json", "r") as f:
+                with open(image_path + "\\fps.json", "r") as f:
                     fps = json.load(f)
-                cur_num = i * fps // SAMPLE_RATE 
+                cur_num = i * fps["fps"] // SAMPLE_RATE 
                 for e in range(0, 2):       #如果一张图找不到，至多找2次
                     mix_name = "{}\\mix\\{:>03d}.bmp".format(image_path, cur_num + e)
                     if os.path.exists(mix_name):
