@@ -1,4 +1,3 @@
-from asyncio.windows_events import NULL
 import json
 import os
 from abc import abstractmethod
@@ -28,17 +27,18 @@ class PianoRollAudioDataset(Dataset):
         for group in groups:
             for input_files in tqdm(self.files(group), desc='Loading group %s' % group):
                 data_dict = self.load(*input_files)
-                with open(data_dict["image_path"] + "\\dataset_config.json") as f:
+                with open(os.path.join(data_dict["image_path"],"dataset_config.json")) as f:
                     dataset_config = json.load(f)
-                cur_data = {}
                 for e in dataset_config:
+                    cur_data = {}
                     cur_data["path"] = data_dict["path"]
                     cur_data["audio"] = data_dict["audio"][dataset_config[e]["audio_begin"]:dataset_config[e]["audio_end"]]
                     cur_data["label"] = data_dict["label"][(dataset_config[e]["audio_begin"]//HOP_LENGTH):(dataset_config[e]["audio_end"]//HOP_LENGTH), :]
                     cur_data["velocity"] = data_dict["velocity"][(dataset_config[e]["audio_begin"]//HOP_LENGTH):(dataset_config[e]["audio_end"]//HOP_LENGTH), :]
                     cur_data["image_path"] = data_dict["image_path"]
                     cur_data["audio_begin"], cur_data["audio_end"] = dataset_config[e]["audio_begin"], dataset_config[e]["audio_end"]
-                    self.data.append(cur_data)
+                    if cur_data["audio"].shape[0]>=81920:
+                        self.data.append(cur_data)
 
     def __getitem__(self, index):
         data = self.data[index]         
@@ -117,7 +117,7 @@ class PianoRollAudioDataset(Dataset):
         """return the list of input files (audio_filename, tsv_filename) for this group"""
         raise NotImplementedError
 
-    def load(self, audio_path, tsv_path, image_path = NULL):
+    def load(self, audio_path, tsv_path, image_path = None):
         """
         load an audio track and the corresponding labels
 
@@ -242,13 +242,13 @@ class SIGHT(PianoRollAudioDataset):
             videos = self.data_path
         else:
             videos = glob(os.path.join('mixModel/data/SIGHT', 'video', 'video_*.mp4'))       
-        flacs = [v.replace('\\video\\', '\\flac\\').replace('.mp4', '.flac') for v in videos]
-        tsvs = [v.replace('\\video\\', '\\tsv\\').replace('video', 'audio').replace('.mp4', '.tsv') for v in videos]
-        image_paths = [v.replace('\\video\\', '\\image\\').replace('.mp4', '') for v in videos]
+        flacs = [v.replace('\\video\\', '\\flac\\').replace('/video/', '/flac/').replace('.mp4', '.flac') for v in videos]
+        tsvs = [v.replace('\\video\\', '\\tsv\\').replace('/video/', '/tsv/').replace('video', 'audio').replace('.mp4', '.tsv') for v in videos]
+        image_paths = [v.replace('\\video\\', '\\image\\').replace('/video/', '/image/').replace('.mp4', '') for v in videos]
         #image 文件夹
         assert(all(os.path.isfile(flac) for flac in flacs))
-        assert(all(os.path.isfile(tsv) for tsv in tsvs))    
-        assert(all(os.path.isfile(video) for video in videos))    
+        assert(all(os.path.isfile(tsv) for tsv in tsvs))
+        assert(all(os.path.isfile(video) for video in videos))
         for image_path in image_paths:
             if os.path.exists(image_path):      #如果文件夹存在则视为已经图像处理完成，所以别动文件夹里的文件
                 continue             
