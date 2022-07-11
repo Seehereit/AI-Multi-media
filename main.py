@@ -95,7 +95,7 @@ def train(local_rank,logdir, device,epochs, iterations, resume_iteration, checkp
 
     data_path = glob(os.path.join('mixModel/data/SIGHT', 'video', 'video_*.mp4'))
     
-    train_path, validation_path = get_kfold_data(data_path, cross_validation)
+    train_path, validation_path = data_path[0:-2], data_path[-2:] #get_kfold_data(data_path, cross_validation)
     train_set = SIGHT(sequence_length=sequence_length, groups=['train'], data_path=train_path)
     train_sampler = DistributedSampler(train_set)
     loader = DataLoader(train_set,sampler=train_sampler, batch_size=batch_size, drop_last=True, pin_memory=False)
