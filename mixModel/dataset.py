@@ -30,15 +30,16 @@ class PianoRollAudioDataset(Dataset):
                 data_dict = self.load(*input_files)
                 with open(os.path.join(data_dict["image_path"],"dataset_config.json")) as f:
                     dataset_config = json.load(f)
-                for e in dataset_config:
+                for e in dataset_config["datapoint"]:
                     cur_data = {}
                     cur_data["path"] = data_dict["path"]
-                    cur_data["audio"] = data_dict["audio"][dataset_config[e]["audio_begin"]:dataset_config[e]["audio_end"]]
+                    cur_data["audio"] = data_dict["audio"][dataset_config["datapoint"][e]["audio_begin"]:dataset_config["datapoint"][e]["audio_end"]]
                     assert len(cur_data["audio"]) == SEQUENCE_LENGTH
-                    cur_data["label"] = data_dict["label"][(dataset_config[e]["audio_begin"]//HOP_LENGTH):(dataset_config[e]["audio_end"]//HOP_LENGTH), :]
-                    cur_data["velocity"] = data_dict["velocity"][(dataset_config[e]["audio_begin"]//HOP_LENGTH):(dataset_config[e]["audio_end"]//HOP_LENGTH), :]
+                    cur_data["label"] = data_dict["label"][(dataset_config["datapoint"][e]["audio_begin"]//HOP_LENGTH):(dataset_config["datapoint"][e]["audio_end"]//HOP_LENGTH), :]
+                    cur_data["velocity"] = data_dict["velocity"][(dataset_config["datapoint"][e]["audio_begin"]//HOP_LENGTH):(dataset_config["datapoint"][e]["audio_end"]//HOP_LENGTH), :]
                     cur_data["image_path"] = data_dict["image_path"]
-                    cur_data["audio_begin"], cur_data["audio_end"] = dataset_config[e]["audio_begin"], dataset_config[e]["audio_end"]
+                    cur_data["audio_begin"], cur_data["audio_end"] = dataset_config["datapoint"][e]["audio_begin"], dataset_config["datapoint"][e]["audio_end"]
+                    cur_data["fps"] = dataset_config["fps"]
                     if cur_data["audio"].shape[0]>=81920:
                         self.data.append(cur_data)
 
@@ -55,9 +56,8 @@ class PianoRollAudioDataset(Dataset):
             # print("current image path is {}".format(image_path))
             result['image'] = []
             for i in range(data["audio_begin"], data["audio_end"], HOP_LENGTH):     #640张图
-                with open(image_path + "\\fps.json", "r") as f:
-                    fps = json.load(f)
-                cur_num = int( i * fps["fps"] // SAMPLE_RATE )
+                fps = data["fps"]
+                cur_num = int( i * fps // SAMPLE_RATE )
                 for e in range(0, 2):       #如果一张图找不到，至多找2次
                     mix_name = "{}\\mix\\{:>03d}.bmp".format(image_path, cur_num + e)
                     if os.path.exists(mix_name):
@@ -254,17 +254,14 @@ class SIGHT(PianoRollAudioDataset):
         assert(all(os.path.isfile(tsv) for tsv in tsvs))
         assert(all(os.path.isfile(video) for video in videos))
         for image_path in image_paths:
-            dataset_config = {}
+            dataset_config, datapoint = {}, {}
             current_pwd = image_path
             path = sorted(os.listdir(os.path.join(current_pwd, "mix")),key = lambda i:int(re.match(r'(\d+)',i).group()))[0]
             image_begin = int(path.split('.')[0])
             image_end = sorted(os.listdir(os.path.join(current_pwd, "mix")),key = lambda i:int(re.match(r'(\d+)',i).group()))[-1]
             videoCapture = cv2.VideoCapture(current_pwd.replace("\\image\\", "\\video\\").replace('/image/', '/video/') + ".mp4")	# 读取视频文件
             fps = videoCapture.get(cv2.CAP_PROP_FPS)	# 计算视频的帧率
-            with open(os.path.join(current_pwd, 'fps.json'), 'w') as f:
-                data = {}
-                data["fps"] = fps
-                json.dump(data, f)
+            dataset_config["fps"] = fps
             audio_end =  int(image_end.split('.')[0]) * SAMPLE_RATE // fps 
             audio_begin = int(image_begin * SAMPLE_RATE // fps)
             audio = soundfile.read(current_pwd.replace("\\image\\", "\\flac\\").replace('/image/', '/flac/') + ".flac", dtype='int16')[0]
@@ -278,9 +275,10 @@ class SIGHT(PianoRollAudioDataset):
                 sampling["audio_end"] = cur_num + SEQUENCE_LENGTH
                 #sampling["image_begin"] = cur_num * FPS // SAMPLE_RATE
                 #sampling["image_end"] = sampling['audio_end'] * FPS // SAMPLE_RATE
-                dataset_config[dict_num] = sampling
+                datapoint[dict_num] = sampling
                 dict_num += 1
             with open(os.path.join(current_pwd, 'dataset_config.json'), 'w') as f:
+                dataset_config["datapoint"] = datapoint
                 json.dump(dataset_config, f)         
                 
         return sorted(zip(flacs, tsvs, image_paths))   
