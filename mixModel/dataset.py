@@ -255,19 +255,19 @@ class SIGHT(PianoRollAudioDataset):
         assert(all(os.path.isfile(video) for video in videos))
         for image_path in image_paths:
             dataset_config = {}
-            current_pwd = image_path + "\\"
-            path = sorted(os.listdir(current_pwd + "mix"),key = lambda i:int(re.match(r'(\d+)',i).group()))[0]
+            current_pwd = image_path
+            path = sorted(os.listdir(os.path.join(current_pwd, "mix")),key = lambda i:int(re.match(r'(\d+)',i).group()))[0]
             image_begin = int(path.split('.')[0])
-            image_end = sorted(os.listdir(current_pwd + "mix"),key = lambda i:int(re.match(r'(\d+)',i).group()))[-1]
-            videoCapture = cv2.VideoCapture(current_pwd.replace("\\image\\", "\\video\\")[0:-1] + ".mp4")	# 读取视频文件
+            image_end = sorted(os.listdir(os.path.join(current_pwd, "mix")),key = lambda i:int(re.match(r'(\d+)',i).group()))[-1]
+            videoCapture = cv2.VideoCapture(current_pwd.replace("\\image\\", "\\video\\").replace('/image/', '/video/') + ".mp4")	# 读取视频文件
             fps = videoCapture.get(cv2.CAP_PROP_FPS)	# 计算视频的帧率
-            with open(current_pwd + 'fps.json', 'w') as f:
+            with open(os.path.join(current_pwd, 'fps.json'), 'w') as f:
                 data = {}
                 data["fps"] = int(fps)
                 json.dump(data, f)
             audio_end =  int(image_end.split('.')[0]) * SAMPLE_RATE // fps 
             audio_begin = int(image_begin * SAMPLE_RATE // fps)
-            audio = soundfile.read(current_pwd.replace("\\image\\", "\\flac\\")[0:-1] + ".flac", dtype='int16')[0]
+            audio = soundfile.read(current_pwd.replace("\\image\\", "\\flac\\").replace('/image/', '/flac/') + ".flac", dtype='int16')[0]
             dict_num = 0
             for cur_num in range(audio_begin, len(audio), SAMPLE_INTERVAL):
                 #if audio[cur_num] == 0 and cur_num >= len(audio) * 9 // 10:     # 用最后一张图片作为终止条件会不会好一点？
