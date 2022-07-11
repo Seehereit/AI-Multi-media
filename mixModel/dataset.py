@@ -57,7 +57,7 @@ class PianoRollAudioDataset(Dataset):
             for i in range(data["audio_begin"], data["audio_end"], HOP_LENGTH):     #640张图
                 with open(image_path + "\\fps.json", "r") as f:
                     fps = json.load(f)
-                cur_num = i * fps["fps"] // SAMPLE_RATE 
+                cur_num = int( i * fps["fps"] // SAMPLE_RATE )
                 for e in range(0, 2):       #如果一张图找不到，至多找2次
                     mix_name = "{}\\mix\\{:>03d}.bmp".format(image_path, cur_num + e)
                     if os.path.exists(mix_name):
@@ -263,7 +263,7 @@ class SIGHT(PianoRollAudioDataset):
             fps = videoCapture.get(cv2.CAP_PROP_FPS)	# 计算视频的帧率
             with open(os.path.join(current_pwd, 'fps.json'), 'w') as f:
                 data = {}
-                data["fps"] = int(fps)
+                data["fps"] = fps
                 json.dump(data, f)
             audio_end =  int(image_end.split('.')[0]) * SAMPLE_RATE // fps 
             audio_begin = int(image_begin * SAMPLE_RATE // fps)
@@ -280,7 +280,7 @@ class SIGHT(PianoRollAudioDataset):
                 #sampling["image_end"] = sampling['audio_end'] * FPS // SAMPLE_RATE
                 dataset_config[dict_num] = sampling
                 dict_num += 1
-            with open(current_pwd + 'dataset_config.json', 'w') as f:
+            with open(os.path.join(current_pwd, 'dataset_config.json'), 'w') as f:
                 json.dump(dataset_config, f)         
                 
         return sorted(zip(flacs, tsvs, image_paths))   
